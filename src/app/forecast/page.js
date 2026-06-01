@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -14,9 +15,14 @@ import {
 } from "recharts";
 
 export default function ForecastPage() {
-    const [forecast, setForecast] = useState(null);
-    const [items, setItems] = useState([]);
-    const [selectedItem, setSelectedItem] = useState("");
+    const [forecast, setForecast] =
+        useState(null);
+
+    const [items, setItems] =
+        useState([]);
+
+    const [selectedItem, setSelectedItem] =
+        useState("");
 
     useEffect(() => {
         loadItems();
@@ -24,274 +30,694 @@ export default function ForecastPage() {
 
     async function loadItems() {
         try {
-            const response = await fetch("/api/items");
-            const result = await response.json();
+            const response =
+                await fetch(
+                    "/api/items"
+                );
 
-            setItems(result.data || []);
+            const result =
+                await response.json();
 
-            if (result.data && result.data.length > 0) {
-                const firstItemId = result.data[0].id;
-
-                setSelectedItem(firstItemId);
-
-                await loadForecast(firstItemId);
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
-    async function loadForecast(itemId) {
-        try {
-            const response = await fetch(
-                `/api/forecast?item_id=${itemId}&save=true`
+            setItems(
+                result.data || []
             );
 
-            const result = await response.json();
+            if (
+                result.data?.length
+            ) {
+                setSelectedItem(
+                    result.data[0].id
+                );
 
-            setForecast(result);
-        } catch (error) {
-            console.error(error);
+                await loadForecast(
+                    result.data[0].id
+                );
+            }
+        } catch (err) {
+            console.error(err);
         }
     }
 
-    if (!forecast) {
-        return (
-            <main className="p-8">
-                Loading...
-            </main>
+    async function loadForecast(
+        itemId
+    ) {
+        try {
+            const response =
+                await fetch(
+                    `/api/forecast?item_id=${itemId}&save=true`
+                );
+
+            const result =
+                await response.json();
+
+            setForecast(
+                result
+            );
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    function f(v) {
+        return Number(
+            v
+        ).toFixed(
+            2
         );
     }
 
-    const chartData = forecast.historicalData.map(
-        (value, index) => ({
-            period: index + 1,
-            actual: value,
-            ses: forecast.sesForecast[index],
-            holt: forecast.holtForecast[index],
-            hw: forecast.hwForecast[index],
-        })
-    );
+    function accuracy(
+        mape
+    ) {
+        if (
+            mape < 10
+        )
+            return "Excellent";
 
-    chartData.push({
-        period: chartData.length + 1,
-        actual: null,
-        ses: forecast.latestForecast.SES,
-        holt: forecast.latestForecast.Holt,
-        hw: forecast.latestForecast.HoltWinters,
-    });
+        if (
+            mape < 20
+        )
+            return "Good";
+
+        if (
+            mape < 50
+        )
+            return "Reasonable";
+
+        return "Poor";
+    }
+
+    const ranking =
+        forecast
+            ? [
+                {
+                    method:
+                        "SES",
+
+                    forecast:
+                        forecast
+                            .latestForecast
+                            .SES,
+
+                    ...forecast
+                        .metrics
+                        .SES,
+                },
+
+                {
+                    method:
+                        "Holt",
+
+                    forecast:
+                        forecast
+                            .latestForecast
+                            .Holt,
+
+                    ...forecast
+                        .metrics
+                        .Holt,
+                },
+
+                {
+                    method:
+                        "Holt-Winters",
+
+                    forecast:
+                        forecast
+                            .latestForecast
+                            .HoltWinters,
+
+                    ...forecast
+                        .metrics
+                        .HoltWinters,
+                },
+            ]
+                .sort(
+                    (
+                        a,
+                        b
+                    ) =>
+                        a.mape -
+                        b.mape
+                )
+            : [];
+
+    if (!forecast)
+        return (
+            <main className="min-h-screen bg-slate-50 flex items-center justify-center">
+
+                Loading...
+
+            </main>
+        );
+
+    const chart =
+        forecast.historicalData.map(
+            (
+                v,
+                i
+            ) => ({
+                period:
+                    i + 1,
+
+                historical:
+                    v,
+
+                ses:
+                    forecast
+                        .sesForecast[
+                    i
+                    ],
+
+                holt:
+                    forecast
+                        .holtForecast[
+                    i
+                    ],
+
+                hw:
+                    forecast
+                        .hwForecast[
+                    i
+                    ],
+            })
+        );
+
 
     return (
-        <main className="p-8">
-            <h1 className="text-3xl font-bold mb-8">
-                Forecast Analysis
-            </h1>
+        <main className="min-h-screen bg-slate-100 text-slate-900">
 
-            <div className="border rounded-lg p-6 mb-8">
-                <h2 className="text-xl font-semibold mb-4">
-                    Generate Forecast
-                </h2>
+            <div className="max-w-7xl mx-auto px-8 py-10">
 
-                <div className="flex gap-4">
-                    <select
-                        className="border rounded p-2"
-                        value={selectedItem}
-                        onChange={(e) =>
-                            setSelectedItem(e.target.value)
-                        }
+                <div className="mb-10">
+
+                    <h1 className="text-6xl font-bold tracking-tight">
+
+                        Forecast Analysis
+
+                    </h1>
+
+                    <p className="mt-3 text-lg text-slate-600">
+
+                        Inventory forecasting using Exponential Smoothing.
+
+                    </p>
+
+                </div>
+
+
+                <div
+                    className="
+bg-white
+rounded-3xl
+border
+border-slate-200
+shadow-sm
+p-8
+mb-8
+"
+                >
+
+                    <h2
+                        className="
+text-2xl
+font-semibold
+mb-6
+"
                     >
-                        {items.map((item) => (
-                            <option
-                                key={item.id}
-                                value={item.id}
-                            >
-                                {item.item_name}
-                            </option>
-                        ))}
-                    </select>
 
-                    <button
-                        className="border rounded px-4 py-2"
-                        onClick={() =>
-                            loadForecast(selectedItem)
-                        }
-                    >
                         Generate Forecast
-                    </button>
+
+                    </h2>
+
+                    <div className="flex gap-4">
+
+                        <select
+                            value={selectedItem}
+                            onChange={(e) =>
+                                setSelectedItem(
+                                    e.target.value
+                                )
+                            }
+                            className="
+h-14
+w-[260px]
+px-5
+rounded-xl
+border
+border-slate-300
+bg-white
+text-slate-900
+outline-none
+focus:ring-2
+focus:ring-blue-500
+"
+                        >
+
+                            {
+                                items.map(
+                                    item =>
+
+                                        <option
+                                            key={item.id}
+                                            value={item.id}
+                                        >
+
+                                            {
+                                                item.item_name
+                                            }
+
+                                        </option>
+
+                                )
+                            }
+
+                        </select>
+
+                        <button
+                            onClick={() =>
+                                loadForecast(
+                                    selectedItem
+                                )
+                            }
+                            className="
+h-14
+px-8
+rounded-xl
+bg-blue-600
+hover:bg-blue-700
+text-white
+font-semibold
+transition
+shadow-sm
+"
+                        >
+
+                            Generate
+
+                        </button>
+
+                    </div>
+
                 </div>
-            </div>
 
-            <div className="border rounded-lg p-6 mb-8">
-                <h2 className="text-xl font-semibold mb-4">
-                    Forecast Comparison Chart
-                </h2>
 
-                <div className="h-[500px]">
-                    <ResponsiveContainer
-                        width="100%"
-                        height="100%"
+                <div
+                    className="
+grid
+grid-cols-12
+gap-8
+mb-8
+"
+                >
+
+                    <div
+                        className="
+col-span-12
+xl:col-span-8
+bg-white
+rounded-3xl
+border
+border-slate-200
+shadow-sm
+p-8
+"
                     >
-                        <LineChart data={chartData}>
-                            <CartesianGrid strokeDasharray="3 3" />
 
-                            <XAxis dataKey="period" />
+                        <div className="mb-6">
 
-                            <YAxis />
+                            <h2 className="text-2xl font-bold">
 
-                            <Tooltip />
+                                Forecast Trend
 
-                            <Legend />
+                            </h2>
 
-                            <Line
-                                type="monotone"
-                                dataKey="actual"
-                                name="Historical"
-                                stroke="#ffffff"
-                                strokeWidth={3}
-                            />
+                            <p className="text-slate-500">
 
-                            <Line
-                                type="monotone"
-                                dataKey="ses"
-                                name="SES"
-                                stroke="#ef4444"
-                            />
+                                Historical vs Forecast
 
-                            <Line
-                                type="monotone"
-                                dataKey="holt"
-                                name="Holt"
-                                stroke="#f59e0b"
-                            />
+                            </p>
 
-                            <Line
-                                type="monotone"
-                                dataKey="hw"
-                                name="Holt-Winters"
-                                stroke="#22c55e"
-                                strokeWidth={3}
-                            />
-                        </LineChart>
-                    </ResponsiveContainer>
+                        </div>
+
+                        <div className="h-[360px]">
+
+                            <ResponsiveContainer>
+
+                                <LineChart
+                                    data={chart}
+                                >
+
+                                    <CartesianGrid
+                                        stroke="#E2E8F0"
+                                    />
+
+                                    <XAxis
+                                        dataKey="period"
+                                    />
+
+                                    <YAxis />
+
+                                    <Tooltip />
+
+                                    <Legend />
+
+                                    <Line
+                                        dataKey="historical"
+                                        stroke="#64748B"
+                                        strokeWidth={3}
+                                    />
+
+                                    <Line
+                                        dataKey="holt"
+                                        stroke="#2563EB"
+                                    />
+
+                                    <Line
+                                        dataKey="hw"
+                                        stroke="#16A34A"
+                                    />
+
+                                    <Line
+                                        dataKey="ses"
+                                        stroke="#EA580C"
+                                    />
+
+                                </LineChart>
+
+                            </ResponsiveContainer>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        className="
+col-span-12
+xl:col-span-4
+space-y-5
+"
+                    >
+
+                        <div
+                            className="
+rounded-3xl
+bg-gradient-to-br
+from-blue-600
+to-indigo-700
+text-white
+p-8
+shadow-lg
+"
+                        >
+
+                            <p
+                                className="
+uppercase
+tracking-wider
+text-sm
+opacity-80
+"
+                            >
+
+                                Recommended
+
+                            </p>
+
+                            <h2
+                                className="
+text-5xl
+font-bold
+mt-3
+"
+                            >
+
+                                {
+                                    forecast.bestMethod.method
+                                }
+
+                            </h2>
+
+                            <p className="mt-4 opacity-90">
+
+                                Lowest MAPE
+
+                            </p>
+
+                        </div>
+
+
+                        <div
+                            className="
+grid
+grid-cols-2
+gap-4
+"
+                        >
+
+                            {[
+                                [
+                                    "Forecast",
+                                    f(
+                                        forecast.forecastValue
+                                    )
+                                ],
+
+                                [
+                                    "MAE",
+                                    f(
+                                        forecast.bestMethod.mae
+                                    )
+                                ],
+
+                                [
+                                    "MAPE",
+                                    `${f(
+                                        forecast.bestMethod.mape
+                                    )}%`
+                                ],
+
+                                [
+                                    "Accuracy",
+                                    accuracy(
+                                        forecast.bestMethod.mape
+                                    )
+                                ]
+
+                            ].map(
+                                m =>
+
+                                    <div
+                                        key={m[0]}
+                                        className="
+bg-white
+border
+border-slate-200
+rounded-2xl
+p-5
+shadow-sm
+"
+                                    >
+
+                                        <p
+                                            className="
+text-sm
+font-medium
+text-slate-500
+"
+                                        >
+
+                                            {
+                                                m[0]
+                                            }
+
+                                        </p>
+
+                                        <p
+                                            className="
+mt-3
+text-xl
+font-bold
+text-slate-900
+"
+                                        >
+
+                                            {
+                                                m[1]
+                                            }
+
+                                        </p>
+
+                                    </div>
+
+                            )}
+
+                        </div>
+
+                    </div>
+
                 </div>
+
+
+                <div
+                    className="
+bg-white
+rounded-3xl
+border
+border-slate-200
+shadow-sm
+p-8
+"
+                >
+
+                    <div className="mb-8">
+
+                        <h2 className="text-2xl font-bold">
+
+                            Compare Methods
+
+                        </h2>
+
+                        <p className="text-slate-500">
+
+                            Ranked by MAPE
+
+                        </p>
+
+                    </div>
+
+
+                    <div
+                        className="
+grid
+md:grid-cols-3
+gap-6
+"
+                    >
+
+                        {
+                            ranking.map(
+                                (
+                                    item,
+                                    i
+                                ) =>
+
+                                    <div
+                                        key={
+                                            item.method
+                                        }
+                                        className="
+bg-slate-50
+border
+border-slate-200
+rounded-3xl
+p-6
+hover:-translate-y-1
+hover:shadow-lg
+transition
+"
+                                    >
+
+                                        <div
+                                            className="
+text-3xl
+mb-5
+"
+                                        >
+
+                                            {
+                                                [
+                                                    "🥇",
+                                                    "🥈",
+                                                    "🥉"
+                                                ][i]
+                                            }
+
+                                        </div>
+
+                                        <h3
+                                            className="
+text-2xl
+font-bold
+text-slate-900
+"
+                                        >
+
+                                            {
+                                                item.method
+                                            }
+
+                                        </h3>
+
+                                        <div className="mt-6">
+
+                                            <p className="text-slate-500">
+
+                                                MAPE
+
+                                            </p>
+
+                                            <p
+                                                className="
+text-5xl
+font-bold
+text-blue-700
+"
+                                            >
+
+                                                {
+                                                    f(
+                                                        item.mape
+                                                    )
+                                                }
+
+                                                %
+
+                                            </p>
+
+                                        </div>
+
+                                        <hr className="my-6" />
+
+                                        <div>
+
+                                            <p className="text-slate-500">
+
+                                                Forecast
+
+                                            </p>
+
+                                            <p
+                                                className="
+text-3xl
+font-bold
+text-slate-900
+"
+                                            >
+
+                                                {
+                                                    f(
+                                                        item.forecast
+                                                    )
+                                                }
+
+                                            </p>
+
+                                        </div>
+
+                                    </div>
+
+                            )
+                        }
+
+                    </div>
+
+                </div>
+
             </div>
 
-            <div className="border rounded-lg p-6 mb-8">
-                <h2 className="text-xl font-semibold mb-4">
-                    Accuracy Metrics
-                </h2>
-
-                <table className="w-full">
-                    <thead>
-                        <tr>
-                            <th className="text-left">
-                                Method
-                            </th>
-                            <th className="text-left">
-                                MAE
-                            </th>
-                            <th className="text-left">
-                                MAPE
-                            </th>
-                            <th className="text-left">
-                                RMSE
-                            </th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        <tr>
-                            <td>SES</td>
-                            <td>
-                                {forecast.metrics.SES.mae.toFixed(
-                                    2
-                                )}
-                            </td>
-                            <td>
-                                {forecast.metrics.SES.mape.toFixed(
-                                    2
-                                )}
-                                %
-                            </td>
-                            <td>
-                                {forecast.metrics.SES.rmse.toFixed(
-                                    2
-                                )}
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>Holt</td>
-                            <td>
-                                {forecast.metrics.Holt.mae.toFixed(
-                                    2
-                                )}
-                            </td>
-                            <td>
-                                {forecast.metrics.Holt.mape.toFixed(
-                                    2
-                                )}
-                                %
-                            </td>
-                            <td>
-                                {forecast.metrics.Holt.rmse.toFixed(
-                                    2
-                                )}
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>Holt-Winters</td>
-                            <td>
-                                {forecast.metrics.HoltWinters.mae.toFixed(
-                                    2
-                                )}
-                            </td>
-                            <td>
-                                {forecast.metrics.HoltWinters.mape.toFixed(
-                                    2
-                                )}
-                                %
-                            </td>
-                            <td>
-                                {forecast.metrics.HoltWinters.rmse.toFixed(
-                                    2
-                                )}
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div className="border rounded-lg p-6">
-                <h2 className="text-xl font-semibold mb-4">
-                    Best Method
-                </h2>
-
-                <p className="text-2xl font-bold">
-                    {forecast.bestMethod.method}
-                </p>
-
-                <p>
-                    Forecast Value:{" "}
-                    {forecast.forecastValue.toFixed(2)}
-                </p>
-
-                <p>
-                    MAE:{" "}
-                    {forecast.bestMethod.mae.toFixed(2)}
-                </p>
-
-                <p>
-                    MAPE:{" "}
-                    {forecast.bestMethod.mape.toFixed(2)}%
-                </p>
-
-                <p>
-                    RMSE:{" "}
-                    {forecast.bestMethod.rmse.toFixed(2)}
-                </p>
-            </div>
         </main>
     );
+
 }

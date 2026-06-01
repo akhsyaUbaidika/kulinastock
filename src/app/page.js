@@ -137,479 +137,395 @@ export default function DashboardPage() {
   }
 
   return (
-    <main className="min-h-screen p-8">
+    <main className="min-h-screen px-10 py-8">
 
-      <h1 className="text-3xl font-bold mb-8">
+      <div className="mb-10">
+        <h1 className="text-[58px] font-bold tracking-[-2px] text-slate-900">
+          KulinaStock Dashboard
+        </h1>
 
-        KulinaStock Dashboard
+        <p className="text-slate-500 text-lg mt-2">
+          Inventory forecasting and stock monitoring overview.
+        </p>
+      </div>
 
-      </h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      {/* SUMMARY */}
 
-        <div className="border rounded-lg p-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-10">
 
-          <h2 className="text-sm text-gray-500">
-            Total Items
-          </h2>
+        {[
+          {
+            label: "Total Items",
+            value: items.length,
+          },
+          {
+            label: "Historical Records",
+            value: history.length,
+          },
+          {
+            label: "Forecast Results",
+            value: forecastResults.length,
+          },
+          {
+            label: "Latest Method",
+            value: latestForecast?.method || "-",
+          },
+        ].map((card) => (
 
-          <p className="text-3xl font-bold">
-            {
-              items.length
-            }
-          </p>
+          <div
+            key={card.label}
+            className="
+bg-white
+rounded-3xl
+p-6
+shadow-sm
+border
+border-slate-200
+hover:shadow-lg
+transition
+"
+          >
 
-        </div>
+            <p className="text-slate-500 text-sm mb-2">
+              {card.label}
+            </p>
 
-        <div className="border rounded-lg p-4">
+            <p className="text-[42px] font-bold text-slate-900">
+              {card.value}
+            </p>
 
-          <h2 className="text-sm text-gray-500">
-            Historical Records
-          </h2>
+          </div>
 
-          <p className="text-3xl font-bold">
-            {
-              history.length
-            }
-          </p>
-
-        </div>
-
-        <div className="border rounded-lg p-4">
-
-          <h2 className="text-sm text-gray-500">
-            Forecast Results
-          </h2>
-
-          <p className="text-3xl font-bold">
-            {
-              forecastResults.length
-            }
-          </p>
-
-        </div>
-
-        <div className="border rounded-lg p-4">
-
-          <h2 className="text-sm text-gray-500">
-
-            Latest Method
-
-          </h2>
-
-          <p className="text-xl font-bold">
-
-            {
-              latestForecast
-                ?.method
-              ||
-              "-"
-            }
-
-          </p>
-
-        </div>
+        ))}
 
       </div>
 
-      <div className="border rounded-lg p-6">
 
-        <h2 className="text-xl font-semibold mb-6">
+      {/* FORECAST */}
 
-          Latest Forecast
+      <div className="grid lg:grid-cols-[2fr_1fr] gap-6 mb-10">
 
-        </h2>
+        <div
+          className="
+bg-white
+rounded-[32px]
+p-8
+border
+shadow-sm
+"
+        >
 
-        {
-          latestForecast
+          <h2 className="text-3xl font-bold mb-8">
+            Latest Forecast
+          </h2>
 
-            ?
+          {
+            latestForecast
+              ?
 
-            (
               <>
 
-                <div className="space-y-3">
+                <div className="mb-6">
 
-                  <p>
+                  <div className="text-slate-500 mb-2">
+                    Item
+                  </div>
 
-                    Item:
-
-                    {" "}
-
-                    {
-                      latestForecast
-                        .items
-                        ?.item_name
-                    }
-
-                  </p>
-
-                  <p>
-
-                    Method:
-
-                    {" "}
-
-                    {
-                      latestForecast
-                        .method
-                    }
-
-                  </p>
-
-                  <p>
-
-                    Forecast:
-
-                    {" "}
-
-                    {
-                      Number(
-                        latestForecast
-                          .forecast_value
-                      )
-                        .toFixed(
-                          2
-                        )
-                    }
-
-                  </p>
-
-                  <p>
-
-                    MAPE:
-
-                    {" "}
-
-                    {
-                      Number(
-                        latestForecast
-                          .mape
-                      )
-                        .toFixed(
-                          2
-                        )
-                    }
-
-                    %
-
-                  </p>
-
-                  <p>
-
-                    MAE:
-
-                    {" "}
-
-                    {
-                      Number(
-                        latestForecast
-                          .mae
-                      )
-                        .toFixed(
-                          2
-                        )
-                    }
-
-                  </p>
-
-                  <p>
-
-                    RMSE:
-
-                    {" "}
-
-                    {
-                      Number(
-                        latestForecast
-                          .rmse
-                      )
-                        .toFixed(
-                          2
-                        )
-                    }
-
-                  </p>
+                  <div className="text-[40px] font-bold">
+                    {latestForecast.items?.item_name}
+                  </div>
 
                 </div>
 
-                {
-                  bestForecast
-                  &&
 
-                  (
+                <div className="grid grid-cols-2 gap-4">
 
-                    <div className="mt-8 pt-6 border-t">
+                  <div className="rounded-2xl bg-slate-50 p-5">
+                    <div className="text-slate-500">
+                      Method
+                    </div>
 
-                      <h3 className="text-lg font-semibold mb-4">
+                    <div className="text-2xl font-semibold">
+                      {latestForecast.method}
+                    </div>
+                  </div>
 
-                        Best Accuracy
 
-                      </h3>
+                  <div className="rounded-2xl bg-blue-600 text-white p-5">
 
-                      <p>
+                    <div className="text-blue-100">
+                      Forecast
+                    </div>
 
-                        Item:
+                    <div className="text-4xl font-bold">
 
-                        {" "}
-
-                        {
-                          bestForecast
-                            .items
-                            ?.item_name
-                        }
-
-                      </p>
-
-                      <p>
-
-                        Method:
-
-                        {" "}
-
-                        {
-                          bestForecast
-                            .method
-                        }
-
-                      </p>
-
-                      <p>
-
-                        MAPE:
-
-                        {" "}
-
-                        {
-                          Number(
-                            bestForecast
-                              .mape
-                          )
-                            .toFixed(
-                              2
-                            )
-                        }
-
-                        %
-
-                        {" "}
-
-                        {
-                          getMAPEBadge(
-                            bestForecast
-                              .mape
-                          )
-                        }
-
-                      </p>
+                      {
+                        Number(
+                          latestForecast.forecast_value
+                        ).toFixed(2)
+                      }
 
                     </div>
 
-                  )
-                }
+                  </div>
+
+
+                  <div className="rounded-2xl border p-5">
+
+                    <div className="text-slate-500">
+                      MAPE
+                    </div>
+
+                    <div className="text-3xl font-bold">
+
+                      {
+                        Number(
+                          latestForecast.mape
+                        ).toFixed(2)
+                      }%
+
+                    </div>
+
+                  </div>
+
+
+                  <div className="rounded-2xl border p-5">
+
+                    <div className="text-slate-500">
+                      MAE
+                    </div>
+
+                    <div className="text-3xl font-bold">
+
+                      {
+                        Number(
+                          latestForecast.mae
+                        ).toFixed(2)
+                      }
+
+                    </div>
+
+                  </div>
+
+                </div>
 
               </>
-            )
 
-            :
+              :
 
-            (
-
-              <p>
-
+              <div className="text-slate-500">
                 No forecast data
+              </div>
 
-              </p>
+          }
+
+        </div>
+
+
+        {/* SIDE */}
+
+        <div className="space-y-5">
+
+          {
+            bestForecast && (
+
+              <div
+                className="
+rounded-[32px]
+bg-gradient-to-br
+from-blue-600
+to-indigo-700
+text-white
+p-8
+shadow-xl
+"
+              >
+
+                <div className="text-blue-100 mb-3">
+                  BEST ACCURACY
+                </div>
+
+                <div className="text-4xl font-bold leading-tight">
+
+                  {
+                    bestForecast.items?.item_name
+                  }
+
+                </div>
+
+                <div className="mt-5">
+
+                  <div className="text-blue-100">
+                    MAPE
+                  </div>
+
+                  <div className="text-5xl font-bold">
+
+                    {
+                      Number(
+                        bestForecast.mape
+                      ).toFixed(2)
+                    }%
+
+                  </div>
+
+                </div>
+
+                <div className="mt-3 text-blue-100">
+                  {
+                    getMAPEBadge(
+                      bestForecast.mape
+                    )
+                  }
+                </div>
+
+              </div>
 
             )
-        }
+          }
+
+
+          <div
+            className="
+bg-white
+rounded-[32px]
+border
+p-8
+"
+          >
+
+            <h3 className="text-2xl font-bold mb-6">
+              Low Stock Alert
+            </h3>
+
+            {
+              lowStock.length
+
+                ?
+
+                <div className="space-y-4">
+
+                  {
+                    lowStock.map((item) => (
+
+                      <div
+                        key={item.id}
+                        className="
+rounded-2xl
+bg-red-50
+border
+border-red-100
+p-4
+"
+                      >
+
+                        <div className="font-semibold">
+                          {item.item_name}
+                        </div>
+
+                        <div className="text-slate-500">
+
+                          Stock:
+                          {" "}
+                          {item.current_stock}
+
+                        </div>
+
+                      </div>
+
+                    ))
+                  }
+
+                </div>
+
+                :
+
+                <div className="text-green-600">
+                  ✓ All stock healthy
+                </div>
+
+            }
+
+          </div>
+
+        </div>
 
       </div>
 
-      <div className="border rounded-lg p-6 mt-8">
 
-        <h2 className="text-xl font-semibold mb-6">
+      {/* RECENT */}
 
+      <div
+        className="
+bg-white
+rounded-[32px]
+border
+p-8
+"
+      >
+
+        <h2 className="text-3xl font-bold mb-8">
           Recent Forecast Results
-
         </h2>
 
         <div className="space-y-4">
 
           {
             forecastResults
-              .slice(
-                0,
-                5
-              )
-              .map(
-                (
-                  row
-                ) => (
+              .slice(0, 5)
+              .map((row) => (
 
-                  <div
-                    key={
-                      row.id
-                    }
-                    className="
-                                        border-b
-                                        pb-4
-                                        "
-                  >
+                <div
+                  key={row.id}
+                  className="
+flex
+justify-between
+items-center
+rounded-2xl
+border
+p-6
+hover:bg-slate-50
+transition
+"
+                >
 
-                    <p>
+                  <div>
 
-                      <b>
+                    <div className="font-bold text-lg">
+                      {row.items?.item_name}
+                    </div>
 
-                        {
-                          row
-                            .items
-                            ?.item_name
-                        }
+                    <div className="text-slate-500">
+                      {row.method}
+                    </div>
 
-                      </b>
+                  </div>
 
-                    </p>
+                  <div className="text-right">
 
-                    <p>
-
-                      {
-                        row.method
-                      }
-
-                    </p>
-
-                    <p>
-
-                      MAPE:
-
-                      {" "}
+                    <div className="text-blue-600 text-3xl font-bold">
 
                       {
                         Number(
                           row.mape
-                        )
-                          .toFixed(
-                            2
-                          )
-                      }
+                        ).toFixed(2)
+                      }%
 
-                      %
+                    </div>
 
-                    </p>
-
-                    <p>
-
-                      MAE:
-
-                      {" "}
-
-                      {
-                        Number(
-                          row.mae
-                        )
-                          .toFixed(
-                            2
-                          )
-                      }
-
-                    </p>
-
-                    <p>
-
-                      RMSE:
-
-                      {" "}
-
-                      {
-                        Number(
-                          row.rmse
-                        )
-                          .toFixed(
-                            2
-                          )
-                      }
-
-                    </p>
+                    <div className="text-slate-500">
+                      MAPE
+                    </div>
 
                   </div>
-                )
-              )
+
+                </div>
+
+              ))
           }
 
         </div>
-
-      </div>
-
-      <div className="border rounded-lg p-6 mt-8">
-
-        <h2 className="text-xl font-semibold mb-6">
-
-          Low Stock Alert
-
-        </h2>
-
-        {
-          lowStock.length
-
-            ?
-
-            lowStock.map(
-              (
-                item
-              ) => (
-
-                <div
-                  key={
-                    item.id
-                  }
-                  className="mb-3"
-                >
-
-                  ⚠
-
-                  {" "}
-
-                  {
-                    item.item_name
-                  }
-
-                  —
-
-                  Stock:
-
-                  {" "}
-
-                  {
-                    item.current_stock
-                  }
-
-                  —
-
-                  {" "}
-
-                  {
-                    getStockStatus(
-                      item.current_stock
-                    )
-                  }
-
-                </div>
-              )
-            )
-
-            :
-
-            (
-
-              <p>
-
-                ✅ All stock healthy
-
-              </p>
-
-            )
-        }
 
       </div>
 
