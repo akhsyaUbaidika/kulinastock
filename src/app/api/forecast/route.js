@@ -106,21 +106,34 @@ export async function GET(request) {
                 hwForecast[hwForecast.length - 1];
         }
 
-        await supabase
-            .from("forecast_results")
-            .insert([
-                {
-                    item_id: parseInt(itemId),
+        const shouldSave =
+            searchParams.get("save");
 
-                    method: bestMethod.method,
+        if (shouldSave === "true") {
+            await supabase
+                .from("forecast_results")
+                .insert([
+                    {
+                        item_id:
+                            parseInt(itemId),
 
-                    forecast_value: forecastValue,
+                        method:
+                            bestMethod.method,
 
-                    mae: bestMethod.mae,
-                    mape: bestMethod.mape,
-                    rmse: bestMethod.rmse,
-                },
-            ]);
+                        forecast_value:
+                            forecastValue,
+
+                        mae:
+                            bestMethod.mae,
+
+                        mape:
+                            bestMethod.mape,
+
+                        rmse:
+                            bestMethod.rmse,
+                    },
+                ]);
+        }
 
         return Response.json({
             success: true,

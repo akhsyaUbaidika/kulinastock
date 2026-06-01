@@ -5,6 +5,7 @@ import Link from "next/link";
 export default function Navbar() {
     return (
         <nav className="border-b p-4 flex gap-6">
+
             <Link href="/">
                 Dashboard
             </Link>
@@ -13,13 +14,22 @@ export default function Navbar() {
                 Items
             </Link>
 
+            <Link href="/history">
+                History
+            </Link>
+
             <Link href="/forecast">
                 Forecast
             </Link>
 
-            <Link href="/history">
-                History
+            <Link href="/forecast-results">
+                Results
             </Link>
+
+            <Link href="/reports">
+                Reports
+            </Link>
+
         </nav>
     );
 }

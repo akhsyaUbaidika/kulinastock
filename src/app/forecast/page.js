@@ -44,7 +44,7 @@ export default function ForecastPage() {
     async function loadForecast(itemId) {
         try {
             const response = await fetch(
-                `/api/forecast?item_id=${itemId}`
+                `/api/forecast?item_id=${itemId}&save=true`
             );
 
             const result = await response.json();
