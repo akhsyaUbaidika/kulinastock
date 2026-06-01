@@ -2,87 +2,107 @@
 
 import {
     useEffect,
+    useRef,
     useState,
 } from "react";
 
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+
 export default function ReportPage() {
+
+    const reportRef =
+        useRef();
 
     const [
         items,
-        setItems,
-    ] =
-        useState([]);
+        setItems
+    ] = useState([]);
 
     const [
         history,
-        setHistory,
-    ] =
-        useState([]);
+        setHistory
+    ] = useState([]);
 
     const [
         forecast,
-        setForecast,
-    ] =
-        useState([]);
+        setForecast
+    ] = useState([]);
 
     useEffect(
         () => {
-
             load();
-
         },
         []
     );
 
     async function load() {
 
-        const itemsRes =
-            await fetch(
-                "/api/items"
-            );
+        const [
+            a,
+            b,
+            c
+        ] = await Promise.all([
 
-        const historyRes =
-            await fetch(
-                "/api/history"
-            );
+            fetch("/api/items"),
+            fetch("/api/history"),
+            fetch("/api/forecast-results")
 
-        const forecastRes =
-            await fetch(
-                "/api/forecast-results"
-            );
-
-        const itemsData =
-            await itemsRes.json();
-
-        const historyData =
-            await historyRes.json();
-
-        const forecastData =
-            await forecastRes.json();
+        ]);
 
         setItems(
-            itemsData.data
+            (await a.json())
+                .data
             ||
             []
         );
 
         setHistory(
-            historyData.data
+            (await b.json())
+                .data
             ||
             []
         );
 
         setForecast(
-            forecastData.data
+            (await c.json())
+                .data
             ||
             []
         );
 
     }
 
+    function mapeBadge(
+        v
+    ) {
+
+        if (v < 10)
+            return "🟢";
+
+        if (v < 20)
+            return "🟡";
+
+        return "🔴";
+
+    }
+
+    function stockStatus(
+        v
+    ) {
+
+        if (v <= 10)
+            return "🔴 Critical";
+
+        if (v <= 20)
+            return "🟡 Low";
+
+        return "🟢 Healthy";
+
+    }
+
     const best =
-        forecast
-            .length
+        forecast.length
 
             ?
 
@@ -103,6 +123,7 @@ export default function ReportPage() {
                         :
 
                         b
+
             )
 
             :
@@ -112,438 +133,551 @@ export default function ReportPage() {
     const lowStock =
         items.filter(
             i =>
-                i.current_stock
-                <
-                20
+                i.current_stock <= 20
         );
+
+    function fileName() {
+
+        const now =
+            new Date();
+
+        const pad =
+            (
+                v
+            ) =>
+                String(v)
+                    .padStart(
+                        2,
+                        "0"
+                    );
+
+        return `KulinaStock_Report_${now.getFullYear()
+            }-${pad(
+                now.getMonth() + 1
+            )
+            }-${pad(
+                now.getDate()
+            )
+            }_${pad(
+                now.getHours()
+            )
+            }-${pad(
+                now.getMinutes()
+            )
+            }.pdf`;
+
+    }
+
+    async function exportPDF() {
+
+        const canvas =
+            await html2canvas(
+                reportRef.current,
+                {
+                    scale: 2,
+                    backgroundColor: "#ffffff",
+                    useCORS: true,
+                }
+            );
+
+        const img =
+            canvas.toDataURL(
+                "image/png"
+            );
+
+        const pdf =
+            new jsPDF({
+                orientation:
+                    "portrait",
+                unit:
+                    "mm",
+                format:
+                    "a4",
+            });
+
+        const pdfWidth =
+            210;
+
+        const pdfHeight =
+            297;
+
+        const imgWidth =
+            pdfWidth - 20;
+
+        const imgHeight =
+            (
+                canvas.height
+                *
+                imgWidth
+            )
+            /
+            canvas.width;
+
+        let y =
+            10;
+
+        pdf.addImage(
+            img,
+            "PNG",
+            10,
+            y,
+            imgWidth,
+            imgHeight
+        );
+
+        pdf.save(
+            fileName()
+        );
+
+    }
 
     return (
 
         <main className="p-8">
 
-            <h1
-                className="
-text-3xl
-font-bold
-mb-8
-"
-            >
-
-                Forecast Report
-
-            </h1>
-
             <div
                 className="
-grid
-grid-cols-1
-md:grid-cols-3
-gap-4
+flex
+justify-between
+items-center
 mb-8
 "
             >
 
-                <div
+                <h1
                     className="
-border
-rounded-lg
-p-4
+text-4xl
+font-bold
 "
                 >
 
-                    <h2>
+                    Forecast Report
 
-                        Total Items
+                </h1>
 
-                    </h2>
+                <button
 
-                    <p
-                        className="
-text-3xl
-font-bold
-"
-                    >
+                    onClick={
+                        exportPDF
+                    }
 
-                        {
-                            items.length
-                        }
-
-                    </p>
-
-                </div>
-
-                <div
                     className="
 border
-rounded-lg
-p-4
+rounded
+px-6
+py-3
+hover:bg-white
+hover:text-black
+transition
 "
+
                 >
 
-                    <h2>
+                    Export PDF
 
-                        Historical Records
-
-                    </h2>
-
-                    <p
-                        className="
-text-3xl
-font-bold
-"
-                    >
-
-                        {
-                            history.length
-                        }
-
-                    </p>
-
-                </div>
-
-                <div
-                    className="
-border
-rounded-lg
-p-4
-"
-                >
-
-                    <h2>
-
-                        Forecast Results
-
-                    </h2>
-
-                    <p
-                        className="
-text-3xl
-font-bold
-"
-                    >
-
-                        {
-                            forecast.length
-                        }
-
-                    </p>
-
-                </div>
+                </button>
 
             </div>
 
             <div
+
+                ref={
+                    reportRef
+                }
+
                 className="
-border
-rounded-lg
-p-6
-mb-8
+bg-white
+text-black
+rounded-xl
+p-10
+space-y-8
 "
+
             >
 
-                <h2
+                <h1
                     className="
-text-xl
-font-semibold
+text-4xl
+font-bold
+"
+                >
+
+                    KulinaStock Forecast Report
+
+                </h1>
+
+                <div
+                    className="
+grid
+grid-cols-3
+gap-6
+"
+                >
+
+                    <Summary
+                        title="Total Items"
+                        value={
+                            items.length
+                        }
+                    />
+
+                    <Summary
+                        title="Historical"
+                        value={
+                            history.length
+                        }
+                    />
+
+                    <Summary
+                        title="Forecast"
+                        value={
+                            forecast.length
+                        }
+                    />
+
+                </div>
+
+                <section>
+
+                    <h2
+                        className="
+text-2xl
+font-bold
 mb-4
 "
-                >
+                    >
 
-                    Forecast Performance
+                        Forecast Performance
 
-                </h2>
+                    </h2>
 
-                <table
-                    className="
+                    <table
+                        className="
 w-full
+border
 "
-                >
+                    >
 
-                    <thead>
+                        <thead>
 
-                        <tr>
+                            <tr>
 
-                            <th>
-                                Item
-                            </th>
+                                <TH>
+                                    Item
+                                </TH>
 
-                            <th>
-                                Method
-                            </th>
+                                <TH>
+                                    Method
+                                </TH>
 
-                            <th>
-                                MAPE
-                            </th>
+                                <TH>
+                                    MAPE
+                                </TH>
 
-                        </tr>
+                            </tr>
 
-                    </thead>
+                        </thead>
 
-                    <tbody>
+                        <tbody>
+
+                            {
+                                forecast.map(
+                                    r => (
+
+                                        <tr
+                                            key={
+                                                r.id
+                                            }
+                                        >
+
+                                            <TD>
+
+                                                {
+                                                    r.items
+                                                        ?.item_name
+                                                }
+
+                                            </TD>
+
+                                            <TD>
+
+                                                {
+                                                    r.method
+                                                }
+
+                                            </TD>
+
+                                            <TD>
+
+                                                {
+                                                    Number(
+                                                        r.mape
+                                                    )
+                                                        .toFixed(
+                                                            2
+                                                        )
+                                                }
+
+                                                %
+
+                                                {" "}
+
+                                                {
+                                                    mapeBadge(
+                                                        r.mape
+                                                    )
+                                                }
+
+                                            </TD>
+
+                                        </tr>
+
+                                    )
+                                )
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </section>
+
+                <section>
+
+                    <h2
+                        className="
+text-2xl
+font-bold
+mb-4
+"
+                    >
+
+                        Stock Monitoring
+
+                    </h2>
+
+                    <div
+                        className="
+space-y-2
+"
+                    >
 
                         {
-                            forecast.map(
-                                (
-                                    row
-                                ) => (
+                            items.map(
+                                i => (
 
-                                    <tr
+                                    <div
                                         key={
-                                            row.id
+                                            i.id
                                         }
                                     >
 
-                                        <td>
+                                        •
 
-                                            {
-                                                row
-                                                    .items
-                                                    ?.item_name
-                                            }
+                                        {" "}
 
-                                        </td>
+                                        {
+                                            i.item_name
+                                        }
 
-                                        <td>
+                                        {" — "}
 
-                                            {
-                                                row.method
-                                            }
+                                        Stock
 
-                                        </td>
+                                        {" "}
 
-                                        <td>
+                                        {
+                                            i.current_stock
+                                        }
 
-                                            {
-                                                Number(
-                                                    row.mape
-                                                )
-                                                    .toFixed(
-                                                        2
-                                                    )
-                                            }
+                                        {" — "}
 
-                                            %
+                                        {
+                                            stockStatus(
+                                                i.current_stock
+                                            )
+                                        }
 
-                                        </td>
-
-                                    </tr>
+                                    </div>
 
                                 )
                             )
                         }
 
-                    </tbody>
+                    </div>
 
-                </table>
+                </section>
 
-            </div>
+                <section>
 
-            <div
-                className="
-border
-rounded-lg
-p-6
-mb-8
-"
-            >
-
-                <h2
-                    className="
-text-xl
-font-semibold
+                    <h2
+                        className="
+text-2xl
+font-bold
 mb-4
 "
-                >
+                    >
 
-                    Stock Monitoring
+                        Conclusion
 
-                </h2>
+                    </h2>
 
-                {
-                    items.map(
-                        (
-                            item
-                        ) => (
+                    <p>
 
-                            <div
-                                key={
-                                    item.id
-                                }
-                                className="
-mb-2
+                        Metode terbaik:
+
+                        {" "}
+
+                        <b>
+
+                            {
+                                best
+                                    ?.method
+                            }
+
+                        </b>
+
+                        {" "}
+
+                        untuk produk
+
+                        {" "}
+
+                        <b>
+
+                            {
+                                best
+                                    ?.items
+                                    ?.item_name
+                            }
+
+                        </b>
+
+                        .
+
+                    </p>
+
+                    <p
+                        className="
+mt-4
 "
-                            >
+                    >
 
-                                {
-                                    item.item_name
-                                }
+                        Produk perlu perhatian:
 
-                                —
+                        {" "}
 
-                                Stock
+                        <b>
 
-                                {
+                            {
+                                lowStock.length
+                            }
 
-                                    item.current_stock
+                        </b>
 
-                                }
+                    </p>
 
-                                —
-
-                                {
-
-                                    item.current_stock
-                                        <
-                                        10
-
-                                        ?
-
-                                        "🔴 Critical"
-
-                                        :
-
-                                        item.current_stock
-                                            <
-                                            20
-
-                                            ?
-
-                                            "🟡 Low"
-
-                                            :
-
-                                            "🟢 Healthy"
-
-                                }
-
-                            </div>
-
-                        )
-                    )
-                }
-
-            </div>
-
-            <div
-                className="
-border
-rounded-lg
-p-6
-"
-            >
-
-                <h2
-                    className="
-text-xl
-font-semibold
-mb-4
-"
-                >
-
-                    Conclusion
-
-                </h2>
-
-                {
-                    best
-
-                        ?
-
-                        (
-
-                            <p>
-
-                                Metode terbaik saat ini adalah
-
-                                {" "}
-
-                                <b>
-
-                                    {
-                                        best.method
-                                    }
-
-                                </b>
-
-                                untuk produk
-
-                                {" "}
-
-                                <b>
-
-                                    {
-                                        best.items
-                                            ?.item_name
-                                    }
-
-                                </b>
-
-                                dengan nilai
-
-                                MAPE
-
-                                {" "}
-
-                                <b>
-
-                                    {
-                                        Number(
-                                            best.mape
-                                        )
-                                            .toFixed(
-                                                2
-                                            )
-                                    }
-
-                                    %
-
-                                </b>
-
-                                .
-
-                            </p>
-
-                        )
-
-                        :
-
-                        (
-
-                            <p>
-
-                                Belum ada data.
-
-                            </p>
-
-                        )
-
-                }
-
-                <br />
-
-                <br />
-
-                <p>
-
-                    Low stock detected:
-
-                    {" "}
-
-                    <b>
-
-                        {
-                            lowStock.length
-                        }
-
-                    </b>
-
-                    produk.
-
-                </p>
+                </section>
 
             </div>
 
         </main>
+
+    );
+
+}
+
+function Summary(
+    {
+        title,
+        value
+    }
+) {
+
+    return (
+
+        <div
+            className="
+border
+rounded
+p-6
+"
+        >
+
+            <h3>
+
+                {
+                    title
+                }
+
+            </h3>
+
+            <div
+                className="
+text-4xl
+font-bold
+mt-3
+"
+            >
+
+                {
+                    value
+                }
+
+            </div>
+
+        </div>
+
+    );
+
+}
+
+function TH(
+    {
+        children
+    }
+) {
+
+    return (
+
+        <th
+            className="
+border
+p-4
+text-left
+"
+        >
+
+            {
+                children
+            }
+
+        </th>
+
+    );
+
+}
+
+function TD(
+    {
+        children
+    }
+) {
+
+    return (
+
+        <td
+            className="
+border
+p-4
+"
+        >
+
+            {
+                children
+            }
+
+        </td>
 
     );
 
