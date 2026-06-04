@@ -1,8 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import {
+    useEffect,
+    useMemo,
+    useState,
+} from "react";
 
 export default function ForecastResultsPage() {
+
     const [results, setResults] =
         useState([]);
 
@@ -16,11 +21,15 @@ export default function ForecastResultsPage() {
         useState("latest");
 
     useEffect(() => {
+
         loadData();
+
     }, []);
 
     async function loadData() {
+
         try {
+
             const response =
                 await fetch(
                     "/api/forecast-results"
@@ -32,125 +41,191 @@ export default function ForecastResultsPage() {
             setResults(
                 result.data || []
             );
-        } catch (error) {
-            console.error(error);
+
         }
+
+        catch (error) {
+
+            console.error(
+                error
+            );
+
+        }
+
     }
 
     const filtered =
         useMemo(() => {
-            let data = [...results];
+
+            let data =
+                [...results];
 
             if (search) {
-                data = data.filter(
-                    (row) =>
-                        row.items?.item_name
-                            ?.toLowerCase()
-                            .includes(
-                                search.toLowerCase()
-                            )
-                );
+
+                data =
+                    data.filter(
+                        row =>
+
+                            row.items
+                                ?.item_name
+                                ?.toLowerCase()
+                                .includes(
+                                    search
+                                        .toLowerCase()
+                                )
+
+                    );
+
             }
 
-            if (method !== "ALL") {
-                data = data.filter(
-                    (row) =>
-                        row.method ===
-                        method
-                );
+            if (
+                method !== "ALL"
+            ) {
+
+                data =
+                    data.filter(
+                        row =>
+
+                            row.method ===
+                            method
+
+                    );
+
             }
 
-            if (sort === "latest") {
+            if (
+                sort === "latest"
+            ) {
+
                 data.sort(
                     (a, b) =>
+
                         new Date(
                             b.created_at
-                        ) -
+                        )
+
+                        -
+
                         new Date(
                             a.created_at
                         )
+
                 );
+
             }
 
-            if (sort === "mape") {
+            if (
+                sort === "mape"
+            ) {
+
                 data.sort(
                     (a, b) =>
+
                         a.mape -
                         b.mape
+
                 );
+
             }
 
             return data;
-        }, [
-            results,
-            search,
-            method,
-            sort,
-        ]);
-    function getMetricBadge(
-        value,
-        type
-    ) {
 
-        if (
-            type === "mape"
-        ) {
+        },
 
-            if (value < 10)
-                return "🟢";
+            [
+                results,
+                search,
+                method,
+                sort,
+            ]
 
-            if (value < 20)
-                return "🟡";
-
-            return "🔴";
-
-        }
-
-        if (
-            type === "mae"
-        ) {
-
-            if (value < 2)
-                return "🟢";
-
-            if (value < 8)
-                return "🟡";
-
-            return "🔴";
-
-        }
-
-        if (
-            type === "rmse"
-        ) {
-
-            if (value < 3)
-                return "🟢";
-
-            if (value < 10)
-                return "🟡";
-
-            return "🔴";
-
-        }
-
-        return "";
-    }
+        );
 
     return (
-        <main className="p-8">
 
-            <h1 className="text-3xl font-bold mb-8">
-                Forecast Results
-            </h1>
+        <main className="min-h-screen px-8 py-8">
 
-            <div className="border rounded-lg p-6 mb-8">
+            {/* HERO */}
 
-                <div className="grid md:grid-cols-3 gap-4">
+            <div className="mb-8">
+
+                <div
+                    className="
+rounded-[32px]
+bg-gradient-to-br
+from-white
+to-violet-50
+border
+border-slate-200/60
+p-10
+"
+                >
+
+                    <p
+                        className="
+uppercase
+tracking-[0.25em]
+text-violet-600
+text-xs
+font-semibold
+mb-3
+"
+                    >
+
+                        Forecast Archive
+
+                    </p>
+
+                    <h1
+                        className="
+text-5xl
+font-bold
+"
+                    >
+
+                        Forecast Results
+
+                    </h1>
+
+                    <p
+                        className="
+mt-3
+text-slate-500
+"
+                    >
+
+                        Review prediction performance and compare forecasting methods.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+
+
+            {/* FILTER */}
+
+            <section
+                className="
+        card
+        px-10
+        py-10
+        "
+            >
+
+                <div
+                    className="
+            grid
+            md:grid-cols-3
+            gap-8
+            "
+                >
 
                     <input
                         placeholder="Search item..."
-                        className="border rounded p-2"
+                        className="input-ui"
                         value={search}
                         onChange={(e) =>
                             setSearch(
@@ -160,7 +235,7 @@ export default function ForecastResultsPage() {
                     />
 
                     <select
-                        className="border rounded p-2"
+                        className="input-ui"
                         value={method}
                         onChange={(e) =>
                             setMethod(
@@ -168,26 +243,16 @@ export default function ForecastResultsPage() {
                             )
                         }
                     >
-                        <option>
-                            ALL
-                        </option>
 
-                        <option>
-                            SES
-                        </option>
-
-                        <option>
-                            Holt
-                        </option>
-
-                        <option>
-                            Holt-Winters
-                        </option>
+                        <option>ALL</option>
+                        <option>SES</option>
+                        <option>Holt</option>
+                        <option>Holt-Winters</option>
 
                     </select>
 
                     <select
-                        className="border rounded p-2"
+                        className="input-ui"
                         value={sort}
                         onChange={(e) =>
                             setSort(
@@ -195,6 +260,7 @@ export default function ForecastResultsPage() {
                             )
                         }
                     >
+
                         <option value="latest">
                             Newest
                         </option>
@@ -207,65 +273,72 @@ export default function ForecastResultsPage() {
 
                 </div>
 
-            </div>
-            <div
+            </section>
+
+
+
+            {/* KPI */}
+
+            <section
                 className="
-grid
-grid-cols-1
-md:grid-cols-3
-gap-4
-mb-6
-"
+        grid
+        md:grid-cols-3
+        gap-6
+        "
             >
 
-                <div
-                    className="
-border
-rounded-lg
-p-4
-"
-                >
+                <div className="card px-8 py-8">
 
-                    <p>
+                    <p
+                        className="
+                text-sm
+                uppercase
+                tracking-wide
+                text-slate-500
+                "
+                    >
                         Total Results
                     </p>
 
                     <h2
                         className="
-text-2xl
-font-bold
-"
+                mt-5
+                text-[44px]
+                font-bold
+                text-slate-900
+                "
                     >
-
-                        {
-                            filtered.length
-                        }
-
+                        {filtered.length}
                     </h2>
 
                 </div>
 
-                <div
-                    className="
-border
-rounded-lg
-p-4
-"
-                >
 
-                    <p>
+                <div className="card px-8 py-8">
+
+                    <p
+                        className="
+                text-sm
+                uppercase
+                tracking-wide
+                text-slate-500
+                "
+                    >
                         Best MAPE
                     </p>
 
                     <h2
                         className="
-text-2xl
-font-bold
-"
+                mt-5
+                text-[44px]
+                font-bold
+                text-blue-600
+                "
                     >
 
                         {
                             filtered.length
+
                                 ?
 
                                 Math.min(
@@ -273,9 +346,8 @@ font-bold
                                         r =>
                                             r.mape
                                     )
-                                ).toFixed(
-                                    2
                                 )
+                                    .toFixed(2)
 
                                 :
 
@@ -288,23 +360,26 @@ font-bold
 
                 </div>
 
-                <div
-                    className="
-border
-rounded-lg
-p-4
-"
-                >
 
-                    <p>
+                <div className="card px-8 py-8">
+
+                    <p
+                        className="
+                text-sm
+                uppercase
+                tracking-wide
+                text-slate-500
+                "
+                    >
                         Methods
                     </p>
 
                     <h2
                         className="
-text-2xl
-font-bold
-"
+                mt-5
+                text-[44px]
+                font-bold
+                "
                     >
 
                         {
@@ -315,177 +390,213 @@ font-bold
                                             r.method
                                     )
                                 )
-                            ].length
+                            ]
+                                .length
                         }
 
                     </h2>
 
                 </div>
 
-            </div>
-            <div className="border rounded-lg p-6 overflow-auto">
+            </section>
 
-                <table className="w-full">
+
+
+            {/* TABLE */}
+
+            <section
+                className="
+        card
+        px-10
+        py-10
+        overflow-hidden
+        "
+            >
+
+                <table
+                    className="
+            w-full
+            text-[15px]
+            "
+                >
 
                     <thead>
 
                         <tr>
 
-                            <th className="text-left">
-                                Item
-                            </th>
+                            {
+                                [
+                                    "Item",
+                                    "Method",
+                                    "Forecast",
+                                    "MAE",
+                                    "MAPE",
+                                    "RMSE",
+                                    "Date"
+                                ]
 
-                            <th className="text-left">
-                                Method
-                            </th>
+                                    .map(
+                                        col => (
 
-                            <th className="text-left">
-                                Forecast
-                            </th>
+                                            <th
+                                                key={col}
+                                                className="
+                                    text-left
+                                    pl-3
+                                    pb-8
+                                    uppercase
+                                    tracking-widest
+                                    text-xs
+                                    text-slate-500
+                                    "
+                                            >
 
-                            <th className="text-left">
-                                MAE
-                            </th>
+                                                {col}
 
-                            <th className="text-left">
-                                MAPE
-                            </th>
+                                            </th>
 
-                            <th className="text-left">
-                                RMSE
-                            </th>
-
-                            <th className="text-left">
-                                Date
-                            </th>
+                                        )
+                                    )
+                            }
 
                         </tr>
 
                     </thead>
 
+
+
                     <tbody>
 
                         {
+
                             filtered.map(
-                                (
-                                    row
-                                ) => (
+                                row => (
+
                                     <tr
-                                        key={
-                                            row.id
-                                        }
-                                        className="border-t"
+                                        key={row.id}
+                                        className="
+                                border-t
+                                border-slate-100
+                                hover:bg-slate-50
+                                transition
+                                "
                                     >
 
-                                        <td>
+                                        <td className="py-6 pl-3 font-semibold">
+
                                             {
-                                                row
-                                                    .items
+                                                row.items
                                                     ?.item_name
                                             }
+
                                         </td>
 
-                                        <td>
-                                            {
-                                                row.method
-                                            }
+                                        <td className="py-6 pl-3">
+
+                                            <span
+                                                className="
+                                        rounded-full
+                                        bg-blue-50
+                                        text-blue-700
+                                        px-3
+                                        py-1
+                                        text-xs
+                                        "
+                                            >
+
+                                                {
+                                                    row.method
+                                                }
+
+                                            </span>
+
                                         </td>
 
-                                        <td>
+                                        <td className="py-6 pl-3">
+
                                             {
                                                 Number(
                                                     row.forecast_value
-                                                ).toFixed(
-                                                    2
                                                 )
+                                                    .toFixed(2)
                                             }
+
                                         </td>
 
-                                        <td>
+                                        <td className="py-6 pl-3">
 
                                             {
                                                 Number(
                                                     row.mae
-                                                ).toFixed(
-                                                    2
                                                 )
-                                            }
-
-                                            {" "}
-
-                                            {
-                                                getMetricBadge(
-                                                    row.mae,
-                                                    "mae"
-                                                )
+                                                    .toFixed(2)
                                             }
 
                                         </td>
 
-                                        <td>
+                                        <td
+                                            className="
+                                    py-6
+                                    pl-3
+                                    font-bold
+                                    text-blue-600
+                                    "
+                                        >
 
                                             {
                                                 Number(
                                                     row.mape
-                                                ).toFixed(
-                                                    2
                                                 )
+                                                    .toFixed(2)
                                             }
 
                                             %
 
-                                            {" "}
-
-                                            {
-                                                getMetricBadge(
-                                                    row.mape,
-                                                    "mape"
-                                                )
-                                            }
-
                                         </td>
 
-                                        <td>
+                                        <td className="py-6 pl-3">
 
                                             {
                                                 Number(
                                                     row.rmse
-                                                ).toFixed(
-                                                    2
                                                 )
-                                            }
-
-                                            {" "}
-
-                                            {
-                                                getMetricBadge(
-                                                    row.rmse,
-                                                    "rmse"
-                                                )
+                                                    .toFixed(2)
                                             }
 
                                         </td>
 
-                                        <td>
+                                        <td
+                                            className="
+                                    py-6
+                                    pl-3
+                                    text-slate-500
+                                    "
+                                        >
+
                                             {
                                                 new Date(
                                                     row.created_at
                                                 )
                                                     .toLocaleDateString()
                                             }
+
                                         </td>
 
                                     </tr>
+
                                 )
                             )
+
                         }
 
                     </tbody>
 
                 </table>
 
-            </div>
+            </section>
 
         </main>
-    );
+
+    )
+
 }

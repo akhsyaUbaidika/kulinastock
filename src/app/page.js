@@ -1,451 +1,686 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState
+}
+
+  from "react";
+
+import Link
+  from "next/link";
 
 export default function DashboardPage() {
-  const [items, setItems] = useState([]);
-  const [history, setHistory] = useState([]);
-  const [forecastResults, setForecastResults] =
-    useState([]);
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  const [
+    data,
+    setData
+  ]
 
-  async function loadData() {
+    =
+
+    useState(
+      null
+    );
+
+  useEffect(
+    () => {
+
+      load();
+
+    },
+
+    []
+  );
+
+  async function load() {
+
     try {
-      const itemsRes =
+
+      const res =
         await fetch(
-          "/api/items"
+          "/api/dashboard"
         );
 
-      const itemsData =
-        await itemsRes.json();
+      const json =
+        await res.json();
 
-      const historyRes =
-        await fetch(
-          "/api/history"
-        );
-
-      const historyData =
-        await historyRes.json();
-
-      const forecastRes =
-        await fetch(
-          "/api/forecast-results"
-        );
-
-      const forecastData =
-        await forecastRes.json();
-
-      setItems(
-        itemsData.data ||
-        []
+      setData(
+        json
       );
 
-      setHistory(
-        historyData.data ||
-        []
-      );
-
-      setForecastResults(
-        forecastData.data ||
-        []
-      );
-
-    } catch (error) {
-      console.error(error);
     }
+
+    catch (
+    err
+    ) {
+
+      console.error(
+        err
+      );
+
+    }
+
   }
 
-  const latestForecast =
-    forecastResults.length
-      ? forecastResults[0]
-      : null;
+  if (
+    !data
+  ) {
 
-  const bestForecast =
-    forecastResults.length
+    return (
+
+      <main className="
+min-h-screen
+flex
+justify-center
+items-center
+">
+
+        Loading...
+
+      </main>
+
+    );
+
+  }
+
+  const {
+
+    summary,
+
+    lowStock,
+
+    priorityItem
+
+  }
+
+    =
+
+    data;
+
+  const predicted3Days =
+
+    priorityItem
+
       ?
 
-      forecastResults.reduce(
-        (
-          best,
-          curr
-        ) =>
-
-          curr.mape
-            <
-            best.mape
-
-            ?
-
-            curr
-
-            :
-
-            best
+      Math.ceil(
+        priorityItem
+          .current_stock
+        *
+        1.2
       )
 
       :
 
-      null;
+      0;
 
-  const lowStock =
-    items.filter(
-      (
-        item
-      ) =>
 
-        item.current_stock
-        <
-        20
-    );
-
-  function getMAPEBadge(
-    value
-  ) {
-
-    if (
-      value <
-      10
-    ) {
-      return "🟢";
-    }
-
-    if (
-      value <
-      20
-    ) {
-      return "🟡";
-    }
-
-    return "🔴";
-  }
-
-  function getStockStatus(
-    value
-  ) {
-
-    if (
-      value <
-      10
-    ) {
-      return "🔴 Critical";
-    }
-
-    return "🟡 Low";
-  }
 
   return (
-    <main className="min-h-screen px-10 py-8">
 
-      <div className="mb-10">
-        <h1 className="text-[58px] font-bold tracking-[-2px] text-slate-900">
-          KulinaStock Dashboard
-        </h1>
+    <main className="
+min-h-screen
+px-8
+py-8
+">
 
-        <p className="text-slate-500 text-lg mt-2">
-          Inventory forecasting and stock monitoring overview.
-        </p>
-      </div>
+      {/* HERO */}
 
-
-      {/* SUMMARY */}
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-10">
-
-        {[
-          {
-            label: "Total Items",
-            value: items.length,
-          },
-          {
-            label: "Historical Records",
-            value: history.length,
-          },
-          {
-            label: "Forecast Results",
-            value: forecastResults.length,
-          },
-          {
-            label: "Latest Method",
-            value: latestForecast?.method || "-",
-          },
-        ].map((card) => (
-
-          <div
-            key={card.label}
-            className="
-bg-white
-rounded-3xl
-p-6
-shadow-sm
-border
-border-slate-200
-hover:shadow-lg
-transition
+      <div
+        className="
+mb-8
 "
-          >
-
-            <p className="text-slate-500 text-sm mb-2">
-              {card.label}
-            </p>
-
-            <p className="text-[42px] font-bold text-slate-900">
-              {card.value}
-            </p>
-
-          </div>
-
-        ))}
-
-      </div>
-
-
-      {/* FORECAST */}
-
-      <div className="grid lg:grid-cols-[2fr_1fr] gap-6 mb-10">
+      >
 
         <div
           className="
-bg-white
 rounded-[32px]
-p-8
+bg-gradient-to-br
+from-white
+to-blue-50
 border
-shadow-sm
+border-slate-200/60
+p-10
 "
         >
 
-          <h2 className="text-3xl font-bold mb-8">
-            Latest Forecast
+          <p
+            className="
+uppercase
+tracking-[0.25em]
+text-blue-600
+text-xs
+font-semibold
+mb-3
+"
+          >
+
+            Inventory Monitoring
+
+          </p>
+
+          <h1
+            className="
+text-5xl
+font-bold
+"
+          >
+
+            KulinaStock
+
+          </h1>
+
+          <p
+            className="
+mt-3
+text-slate-500
+"
+          >
+
+            Inventory summary.
+
+          </p>
+
+        </div>
+
+      </div>
+
+
+
+      {/* CARDS */}
+
+      <div
+        className="
+grid
+grid-cols-2
+xl:grid-cols-4
+gap-5
+mb-8
+"
+      >
+
+        {
+
+          [
+
+            [
+              "Total Items",
+              summary.totalItems
+            ],
+
+            [
+              "Current Stock",
+              summary.currentStock
+            ],
+
+            [
+              "Historical Records",
+              summary.historicalRecords
+            ],
+
+            [
+              "Forecast Ready",
+              summary.forecastReady
+            ]
+
+          ]
+
+            .map(
+
+              (
+                v,
+                i
+              ) => (
+
+                <div
+                  key={
+                    v[0]
+                  }
+                  className="
+card
+p-6
+relative
+"
+                >
+
+                  <div
+                    className="
+text-xs
+uppercase
+text-slate-500
+"
+                  >
+
+                    {
+                      v[0]
+                    }
+
+                  </div>
+
+                  <div
+                    className="
+text-[40px]
+font-bold
+mt-3
+"
+                  >
+
+                    {
+                      v[1]
+                    }
+
+                  </div>
+
+                  <div
+                    className="
+absolute
+right-4
+bottom-[-8px]
+text-[72px]
+opacity-[0.04]
+font-black
+"
+                  >
+
+                    0{i + 1}
+
+                  </div>
+
+                </div>
+
+              )
+
+            )
+
+        }
+
+      </div>
+
+
+
+      <div
+        className="
+grid
+xl:grid-cols-[2fr_360px]
+gap-6
+"
+      >
+
+        {/* FORECAST SUMMARY */}
+
+        <div
+          className="
+card
+p-8
+"
+        >
+
+          <h2
+            className="
+text-2xl
+font-bold
+mb-8
+"
+          >
+
+            Forecast Summary
+
           </h2>
 
           {
-            latestForecast
+
+            priorityItem
+
               ?
 
-              <>
+              (
 
-                <div className="mb-6">
+                <>
 
-                  <div className="text-slate-500 mb-2">
-                    Item
+                  <div
+                    className="
+text-slate-500
+"
+                  >
+
+                    Critical Item
+
                   </div>
 
-                  <div className="text-[40px] font-bold">
-                    {latestForecast.items?.item_name}
-                  </div>
+                  <div
+                    className="
+text-[48px]
+font-bold
+mb-8
+"
+                  >
 
-                </div>
-
-
-                <div className="grid grid-cols-2 gap-4">
-
-                  <div className="rounded-2xl bg-slate-50 p-5">
-                    <div className="text-slate-500">
-                      Method
-                    </div>
-
-                    <div className="text-2xl font-semibold">
-                      {latestForecast.method}
-                    </div>
-                  </div>
-
-
-                  <div className="rounded-2xl bg-blue-600 text-white p-5">
-
-                    <div className="text-blue-100">
-                      Forecast
-                    </div>
-
-                    <div className="text-4xl font-bold">
-
-                      {
-                        Number(
-                          latestForecast.forecast_value
-                        ).toFixed(2)
-                      }
-
-                    </div>
+                    {
+                      priorityItem
+                        .item_name
+                    }
 
                   </div>
 
 
-                  <div className="rounded-2xl border p-5">
 
-                    <div className="text-slate-500">
-                      MAPE
+                  <div
+                    className="
+grid
+md:grid-cols-3
+gap-4
+"
+                  >
+
+                    <div
+                      className="
+rounded-3xl
+bg-slate-50
+p-6
+"
+                    >
+
+                      <div>
+
+                        Current
+
+                      </div>
+
+                      <div
+                        className="
+text-4xl
+font-bold
+mt-2
+"
+                      >
+
+                        {
+                          priorityItem
+                            .current_stock
+                        }
+
+                      </div>
+
                     </div>
 
-                    <div className="text-3xl font-bold">
 
-                      {
-                        Number(
-                          latestForecast.mape
-                        ).toFixed(2)
-                      }%
+
+                    <div
+                      className="
+rounded-3xl
+bg-blue-600
+text-white
+p-6
+"
+                    >
+
+                      <div>
+
+                        Prediction 3 Days
+
+                      </div>
+
+                      <div
+                        className="
+text-4xl
+font-bold
+mt-2
+"
+                      >
+
+                        {
+                          predicted3Days
+                        }
+
+                      </div>
+
+                    </div>
+
+
+
+                    <div
+                      className="
+rounded-3xl
+bg-red-50
+p-6
+"
+                    >
+
+                      <div>
+
+                        Minimum
+
+                      </div>
+
+                      <div
+                        className="
+text-4xl
+font-bold
+mt-2
+text-red-600
+"
+                      >
+
+                        20
+
+                      </div>
 
                     </div>
 
                   </div>
 
 
-                  <div className="rounded-2xl border p-5">
 
-                    <div className="text-slate-500">
-                      MAE
-                    </div>
+                  <Link
 
-                    <div className="text-3xl font-bold">
+                    href={
+                      `/forecast?item=${priorityItem.id}`
+                    }
 
-                      {
-                        Number(
-                          latestForecast.mae
-                        ).toFixed(2)
-                      }
+                    className="
+mt-8
+inline-flex
+px-8
+py-4
+rounded-2xl
+bg-blue-600
+text-white
+"
+                  >
 
-                    </div>
+                    Lihat Detail
 
-                  </div>
+                  </Link>
 
-                </div>
+                </>
 
-              </>
+              )
 
               :
 
-              <div className="text-slate-500">
-                No forecast data
-              </div>
+              (
+
+                <div
+                  className="
+text-green-600
+text-xl
+"
+                >
+
+                  ✓
+                  Healthy
+
+                </div>
+
+              )
 
           }
 
         </div>
 
 
-        {/* SIDE */}
 
-        <div className="space-y-5">
+        {/* WARNING */}
 
-          {
-            bestForecast && (
+        <div
+          className="
+space-y-6
+"
+        >
 
-              <div
-                className="
+          <div
+            className="
 rounded-[32px]
 bg-gradient-to-br
 from-blue-600
 to-indigo-700
 text-white
 p-8
-shadow-xl
 "
-              >
+          >
 
-                <div className="text-blue-100 mb-3">
-                  BEST ACCURACY
-                </div>
+            <div>
 
-                <div className="text-4xl font-bold leading-tight">
+              Low Stock
 
-                  {
-                    bestForecast.items?.item_name
-                  }
+            </div>
 
-                </div>
+            <div
+              className="
+text-6xl
+font-black
+mt-4
+"
+            >
 
-                <div className="mt-5">
+              {
+                lowStock
+                  .length
+              }
 
-                  <div className="text-blue-100">
-                    MAPE
-                  </div>
+            </div>
 
-                  <div className="text-5xl font-bold">
+          </div>
 
-                    {
-                      Number(
-                        bestForecast.mape
-                      ).toFixed(2)
-                    }%
-
-                  </div>
-
-                </div>
-
-                <div className="mt-3 text-blue-100">
-                  {
-                    getMAPEBadge(
-                      bestForecast.mape
-                    )
-                  }
-                </div>
-
-              </div>
-
-            )
-          }
 
 
           <div
             className="
-bg-white
-rounded-[32px]
-border
-p-8
+card
+p-6
 "
           >
 
-            <h3 className="text-2xl font-bold mb-6">
-              Low Stock Alert
+            <h3
+              className="
+text-xl
+font-bold
+mb-5
+"
+            >
+
+              Low Stock Warning
+
             </h3>
 
-            {
-              lowStock.length
+            <div
+              className="
+space-y-3
+"
+            >
 
-                ?
+              {
 
-                <div className="space-y-4">
+                lowStock
+                  .length
 
-                  {
-                    lowStock.map((item) => (
+                  ?
 
-                      <div
-                        key={item.id}
+                  lowStock.map(
+
+                    item => (
+
+                      <Link
+
+                        key={
+                          item.id
+                        }
+
+                        href={
+                          `/forecast?item=${item.id}`
+                        }
+
                         className="
+block
 rounded-2xl
 bg-red-50
-border
-border-red-100
-p-4
+p-5
 "
                       >
 
-                        <div className="font-semibold">
-                          {item.item_name}
+                        <div
+                          className="
+font-semibold
+"
+                        >
+
+                          {
+                            item
+                              .item_name
+                          }
+
                         </div>
 
-                        <div className="text-slate-500">
+                        <div
+                          className="
+text-slate-500
+"
+                        >
 
-                          Stock:
+                          Stock
+
                           {" "}
-                          {item.current_stock}
+
+                          {
+                            item
+                              .current_stock
+                          }
+
+                          /
+
+                          {
+                            item
+                              .minimum_stock
+                          }
 
                         </div>
 
-                      </div>
+                      </Link>
 
-                    ))
-                  }
+                    )
 
-                </div>
+                  )
 
-                :
+                  :
 
-                <div className="text-green-600">
-                  ✓ All stock healthy
-                </div>
+                  (
 
-            }
+                    <div
+                      className="
+text-green-600
+"
+                    >
+
+                      Healthy
+
+                    </div>
+
+                  )
+
+              }
+
+            </div>
 
           </div>
 
@@ -453,82 +688,8 @@ p-4
 
       </div>
 
-
-      {/* RECENT */}
-
-      <div
-        className="
-bg-white
-rounded-[32px]
-border
-p-8
-"
-      >
-
-        <h2 className="text-3xl font-bold mb-8">
-          Recent Forecast Results
-        </h2>
-
-        <div className="space-y-4">
-
-          {
-            forecastResults
-              .slice(0, 5)
-              .map((row) => (
-
-                <div
-                  key={row.id}
-                  className="
-flex
-justify-between
-items-center
-rounded-2xl
-border
-p-6
-hover:bg-slate-50
-transition
-"
-                >
-
-                  <div>
-
-                    <div className="font-bold text-lg">
-                      {row.items?.item_name}
-                    </div>
-
-                    <div className="text-slate-500">
-                      {row.method}
-                    </div>
-
-                  </div>
-
-                  <div className="text-right">
-
-                    <div className="text-blue-600 text-3xl font-bold">
-
-                      {
-                        Number(
-                          row.mape
-                        ).toFixed(2)
-                      }%
-
-                    </div>
-
-                    <div className="text-slate-500">
-                      MAPE
-                    </div>
-
-                  </div>
-
-                </div>
-
-              ))
-          }
-
-        </div>
-
-      </div>
-
     </main>
+
   );
+
 }

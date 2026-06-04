@@ -4,36 +4,40 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import {
+    LayoutDashboard,
+    Package,
+    History,
+    TrendingUp,
+    FileBarChart,
+    Menu,
+} from "lucide-react";
+
 const menu = [
     {
         name: "Dashboard",
         href: "/",
-        icon: "◫",
+        icon: LayoutDashboard,
     },
     {
         name: "Items",
         href: "/items",
-        icon: "▮",
+        icon: Package,
     },
     {
         name: "History",
         href: "/history",
-        icon: "◧",
+        icon: History,
     },
     {
         name: "Forecast",
         href: "/forecast",
-        icon: "◩",
-    },
-    {
-        name: "Results",
-        href: "/forecast-result",
-        icon: "◎",
+        icon: TrendingUp,
     },
     {
         name: "Reports",
         href: "/reports",
-        icon: "▣",
+        icon: FileBarChart,
     },
 ];
 
@@ -87,7 +91,7 @@ ${collapsed
 
                 {/* HEADER */}
 
-                <div
+                {/* <div
                     className="
 h-[88px]
 border-b
@@ -140,6 +144,57 @@ transition
                         ☰
                     </button>
 
+                </div> */}
+
+                {/* HEADER */}
+
+                <div
+                    className="
+h-[88px]
+border-b
+border-blue-200
+px-6
+flex
+items-center
+justify-between
+"
+                >
+
+                    {!collapsed && (
+                        <div>
+
+                            <h1
+                                className="
+text-2xl
+font-bold
+text-blue-700
+tracking-tight
+"
+                            >
+                                KulinaStock
+                            </h1>
+
+                        </div>
+                    )}
+
+                    <button
+                        onClick={() =>
+                            setCollapsed(
+                                !collapsed
+                            )
+                        }
+                        className="
+w-10
+h-10
+rounded-xl
+hover:bg-blue-50
+transition
+text-slate-700
+"
+                    >
+                        <Menu size={22} />
+                    </button>
+
                 </div>
 
                 {/* MENU */}
@@ -153,7 +208,7 @@ space-y-2
 "
                 >
 
-                    {menu.map(
+                    {/* {menu.map(
                         (item) => {
 
                             const active =
@@ -210,8 +265,66 @@ min-w-[20px]
 
                             );
                         }
-                    )}
+                    )} */}
 
+                    {menu.map((item) => {
+
+                        const active =
+                            pathname === item.href;
+
+                        const Icon = item.icon;
+
+                        return (
+
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                className={`
+flex
+items-center
+gap-4
+rounded-2xl
+px-5
+py-4
+transition-all
+
+${active
+                                        ? `
+bg-blue-50
+text-blue-600
+font-semibold
+`
+                                        : `
+text-slate-600
+hover:bg-slate-50
+hover:text-slate-900
+`
+                                    }
+`}
+                            >
+
+                                <Icon
+                                    size={20}
+                                    strokeWidth={
+                                        active
+                                            ? 2.5
+                                            : 2
+                                    }
+                                    className="
+shrink-0
+"
+                                />
+
+                                {!collapsed && (
+                                    <span>
+                                        {item.name}
+                                    </span>
+                                )}
+
+                            </Link>
+
+                        );
+                    })}
                 </nav>
 
                 {/* FOOTER */}
