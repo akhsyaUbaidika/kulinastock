@@ -7,6 +7,14 @@ import {
 import Navbar
   from "@/components/Navbar";
 
+import {
+  AuthProvider
+}
+  from "@/context/AuthContext";
+
+import LayoutWrapper
+  from "@/components/LayoutWrapper";
+
 import "./globals.css";
 
 const geistSans =
@@ -39,19 +47,13 @@ ${geistMono.variable}
 
       <body>
 
-        <Navbar />
+        <AuthProvider>
 
-        <main
-          id="dashboard-content"
-          className="
-min-h-screen
-transition-all
-duration-300
-ml-[260px]
-"
-        >
-          {children}
-        </main>
+          <LayoutWrapper>
+            {children}
+          </LayoutWrapper>
+
+        </AuthProvider>
 
       </body>
 

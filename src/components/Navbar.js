@@ -3,45 +3,206 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import {
+    useAuth
+} from "@/context/AuthContext";
 
 import {
     LayoutDashboard,
     Package,
     History,
     TrendingUp,
-    FileBarChart,
+    Database,
+    FlaskConical,
     Menu,
 } from "lucide-react";
 
-const menu = [
-    {
-        name: "Dashboard",
-        href: "/",
-        icon: LayoutDashboard,
-    },
-    {
-        name: "Items",
-        href: "/items",
-        icon: Package,
-    },
-    {
-        name: "History",
-        href: "/history",
-        icon: History,
-    },
-    {
-        name: "Forecast",
-        href: "/forecast",
-        icon: TrendingUp,
-    },
-    {
-        name: "Reports",
-        href: "/reports",
-        icon: FileBarChart,
-    },
-];
+// const menu = [
+//     {
+//         name: "Dashboard",
+//         href: "/",
+//         icon: LayoutDashboard,
+//     },
+//     {
+//         name: "Items",
+//         href: "/items",
+//         icon: Package,
+//     },
+//     {
+//         name: "History",
+//         href: "/history",
+//         icon: History,
+//     },
+//     {
+//         name: "Forecast",
+//         href: "/forecast",
+//         icon: TrendingUp,
+//     },
+//     {
+//         name: "Reports",
+//         href: "/reports",
+//         icon: FileBarChart,
+//     },
+// ];
+
+const menusByRole = {
+
+    operational: [
+
+        {
+            name:
+                "Dashboard",
+
+            href:
+                "/dashboard",
+
+            icon:
+                LayoutDashboard,
+        },
+
+        {
+            name:
+                "Items",
+
+            href:
+                "/items",
+
+            icon:
+                Package,
+        },
+
+        {
+            name:
+                "History",
+
+            href:
+                "/history",
+
+            icon:
+                History,
+        },
+
+        {
+            name:
+                "Stock Planning",
+
+            href:
+                "/stock-planning",
+
+            icon:
+                TrendingUp,
+        },
+
+    ],
+
+    analyst: [
+
+        {
+            name:
+                "Overview",
+
+            href:
+                "/overview",
+
+            icon:
+                Database,
+        },
+
+        {
+            name:
+                "Forecast Lab",
+
+            href:
+                "/forecast-lab",
+
+            icon:
+                FlaskConical,
+        },
+
+    ],
+
+    superadmin: [
+
+        {
+            name:
+                "Dashboard",
+
+            href:
+                "/",
+
+            icon:
+                LayoutDashboard,
+        },
+
+        {
+            name:
+                "Items",
+
+            href:
+                "/items",
+
+            icon:
+                Package,
+        },
+
+        {
+            name:
+                "History",
+
+            href:
+                "/history",
+
+            icon:
+                History,
+        },
+
+        {
+            name:
+                "Stock Planning",
+
+            href:
+                "/stock-planning",
+
+            icon:
+                TrendingUp,
+        },
+
+        {
+            name:
+                "Overview",
+
+            href:
+                "/overview",
+
+            icon:
+                Database,
+        },
+
+        {
+            name:
+                "Forecast Lab",
+
+            href:
+                "/forecast-lab",
+
+            icon:
+                FlaskConical,
+        },
+
+    ],
+
+};
 
 export default function Navbar() {
+    const {
+        role,
+        logout,
+    } = useAuth();
+
+    const menu =
+        menusByRole[
+        role
+        ] || [];
     const pathname = usePathname();
 
     const [collapsed, setCollapsed] =
@@ -326,6 +487,22 @@ shrink-0
                         );
                     })}
                 </nav>
+                <button
+                    onClick={logout}
+                    className="
+mx-3
+mb-5
+h-12
+rounded-2xl
+bg-red-50
+text-red-600
+font-semibold
+"
+                >
+
+                    Logout
+
+                </button>
 
                 {/* FOOTER */}
 

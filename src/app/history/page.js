@@ -2,10 +2,18 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+
 export default function HistoryPage() {
 
     const [history, setHistory] = useState(null);
     const [items, setItems] = useState([]);
+
+    const [page, setPage] =
+        useState(1);
+
+    const PAGE_SIZE = 10;
 
     const today =
         new Date()
@@ -27,17 +35,46 @@ export default function HistoryPage() {
 
         });
 
-    const [filter,
-        setFilter] =
-        useState({
+    // const [filter,
+    //     setFilter] =
+    //     useState({
 
-            item: "",
+    //         item: "",
 
-            type: "",
+    //         type: "",
 
-            date: "",
+    //         date: "",
 
-        });
+    //     });
+
+    const [selectedItems,
+        setSelectedItems] =
+        useState([]);
+
+    const [selectedTypes,
+        setSelectedTypes] =
+        useState([]);
+
+    const [startDate,
+        setStartDate] =
+        useState("");
+
+    const [endDate,
+        setEndDate] =
+        useState("");
+
+    const [openItems,
+        setOpenItems] =
+        useState(false);
+
+    const [openTypes,
+        setOpenTypes] =
+        useState(false);
+
+    const types = [
+        "IN",
+        "OUT"
+    ];
 
     async function load() {
 
@@ -162,61 +199,169 @@ export default function HistoryPage() {
 
     }
 
+    function toggleValue(
+        value,
+        state,
+        setState
+    ) {
+
+        setState(prev => {
+
+            if (
+                prev.includes(value)
+            ) {
+
+                return prev.filter(
+                    item =>
+                        item !== value
+                );
+
+            }
+
+            return [
+                ...prev,
+                value
+            ];
+
+        });
+
+    }
+
+    function selectAll(
+        values,
+        setState
+    ) {
+
+        setState(values);
+
+    }
+
+    function clearAll(
+        setState
+    ) {
+
+        setState([]);
+
+    }
+
+    // const rows =
+    //     useMemo(
+    //         () => {
+
+    //             if (
+    //                 !history
+    //             )
+    //                 return [];
+
+    //             return history.data
+    //                 .filter(
+    //                     row => {
+
+    //                         const item =
+    //                             !filter.item
+    //                             ||
+    //                             String(
+    //                                 row.items?.id
+    //                             )
+    //                             ===
+    //                             filter.item;
+
+    //                         const type =
+    //                             !filter.type
+    //                             ||
+    //                             row.transaction_type
+    //                             ===
+    //                             filter.type;
+
+    //                         const date =
+    //                             !filter.date
+    //                             ||
+    //                             row.transaction_date
+    //                             ===
+    //                             filter.date;
+
+    //                         return (
+    //                             item
+    //                             &&
+    //                             type
+    //                             &&
+    //                             date
+    //                         );
+
+    //                     }
+    //                 );
+
+    //         },
+
+    //         [
+    //             history,
+    //             filter
+    //         ]
+
+    //     );
+
     const rows =
-        useMemo(
-            () => {
+        useMemo(() => {
 
-                if (
-                    !history
-                )
-                    return [];
+            if (!history)
+                return [];
 
-                return history.data
-                    .filter(
-                        row => {
+            return history.data.filter(
+                row => {
 
-                            const item =
-                                !filter.item
-                                ||
-                                String(
-                                    row.items?.id
-                                )
-                                ===
-                                filter.item;
+                    const itemMatch =
+                        selectedItems.length === 0
+                        ||
+                        selectedItems.includes(
+                            row.items?.item_name
+                        );
 
-                            const type =
-                                !filter.type
-                                ||
-                                row.transaction_type
-                                ===
-                                filter.type;
+                    const typeMatch =
+                        selectedTypes.length === 0
+                        ||
+                        selectedTypes.includes(
+                            row.transaction_type
+                        );
 
-                            const date =
-                                !filter.date
-                                ||
-                                row.transaction_date
-                                ===
-                                filter.date;
+                    const rowDate =
+                        new Date(
+                            row.transaction_date
+                        );
 
-                            return (
-                                item
-                                &&
-                                type
-                                &&
-                                date
-                            );
+                    const startMatch =
+                        !startDate
+                        ||
+                        rowDate >=
+                        new Date(startDate);
 
-                        }
+                    const endMatch =
+                        !endDate
+                        ||
+                        rowDate <=
+                        new Date(endDate);
+
+                    return (
+                        itemMatch
+                        &&
+                        typeMatch
+                        &&
+                        startMatch
+                        &&
+                        endMatch
                     );
 
-            },
+                }
+            );
 
-            [
-                history,
-                filter
-            ]
+        }, [
 
-        );
+            history,
+            selectedItems,
+            selectedTypes,
+            startDate,
+            endDate,
+
+        ]);
 
     if (
         !history
@@ -235,6 +380,101 @@ export default function HistoryPage() {
             </div>
 
         );
+
+    function exportExcel() {
+
+        if (
+            rows.length === 0
+        ) {
+
+            alert(
+                "Tidak ada data"
+            );
+
+            return;
+
+        }
+
+        const exportData =
+            rows
+                .slice(
+                    (page - 1) * PAGE_SIZE,
+                    page * PAGE_SIZE
+                )
+                .map(row => ({
+
+                    Date:
+                        row.transaction_date,
+
+                    Item:
+                        row.items?.item_name,
+
+                    Type:
+                        row.transaction_type,
+
+                    Qty:
+                        row.qty,
+
+                    Unit:
+                        row.items?.unit,
+
+                }));
+
+        const worksheet =
+            XLSX.utils.json_to_sheet(
+                exportData
+            );
+
+        const workbook =
+            XLSX.utils.book_new();
+
+        XLSX.utils.book_append_sheet(
+
+            workbook,
+            worksheet,
+            "Overview"
+
+        );
+
+        const excelBuffer =
+            XLSX.write(
+                workbook,
+                {
+                    bookType: "xlsx",
+                    type: "array",
+                }
+            );
+
+        const blob =
+            new Blob(
+                [excelBuffer],
+                {
+                    type:
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                }
+            );
+
+        const todayExport =
+            new Date();
+
+        const formattedDate =
+            todayExport
+                .toLocaleDateString(
+                    "id-ID",
+                    {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                    }
+                )
+                .replaceAll("/", "-");
+
+        saveAs(
+            blob,
+            `History Stock ${formattedDate}.xlsx`
+        );
+
+    }
 
     return (
 
@@ -480,7 +720,7 @@ export default function HistoryPage() {
                 "
             >
 
-                <div
+                {/* <div
                     className="
                     flex
                     gap-4
@@ -578,9 +818,375 @@ export default function HistoryPage() {
                         "
                     />
 
-                </div>
+                </div> */}
+                <h2
+                    className="
+                    text-3xl
+                    font-bold
+                    mb-6
+                    "
+                >
+                    History Transaction
+                </h2>
 
-                <table
+                <div
+                    className="
+flex
+gap-4
+mb-8
+flex-wrap
+"
+                >
+
+
+                    {/* ITEM FILTER */}
+
+                    <div className="relative">
+
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setOpenItems(
+                                    !openItems
+                                )
+                            }
+                            className="
+rounded-2xl
+p-4
+bg-slate-50
+min-w-[220px]
+text-left
+flex
+justify-between
+items-center
+"
+                        >
+
+                            <span>
+
+                                {
+                                    selectedItems.length === 0
+                                        ? "All Items"
+                                        : `${selectedItems.length} item selected`
+                                }
+
+                            </span>
+
+                            <span>▼</span>
+
+                        </button>
+
+                        {
+                            openItems && (
+
+                                <div
+                                    className="
+absolute
+z-20
+mt-2
+w-full
+bg-white
+border
+rounded-2xl
+shadow-xl
+p-4
+max-h-72
+overflow-auto
+"
+                                >
+
+                                    <div className="flex gap-2 mb-4">
+
+                                        <button
+                                            onClick={() =>
+                                                selectAll(
+                                                    items.map(
+                                                        i => i.item_name
+                                                    ),
+                                                    setSelectedItems
+                                                )
+                                            }
+                                            className="
+text-xs
+px-3
+py-1
+rounded-xl
+bg-slate-100
+"
+                                        >
+
+                                            Select All
+
+                                        </button>
+
+                                        <button
+                                            onClick={() =>
+                                                clearAll(
+                                                    setSelectedItems
+                                                )
+                                            }
+                                            className="
+text-xs
+px-3
+py-1
+rounded-xl
+bg-red-100
+text-red-600
+"
+                                        >
+
+                                            Clear
+
+                                        </button>
+
+                                    </div>
+
+                                    <div className="space-y-2">
+
+                                        {
+                                            items.map(item => (
+
+                                                <label
+                                                    key={item.id}
+                                                    className="
+flex
+items-center
+gap-3
+"
+                                                >
+
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={
+                                                            selectedItems.includes(
+                                                                item.item_name
+                                                            )
+                                                        }
+                                                        onChange={() =>
+                                                            toggleValue(
+                                                                item.item_name,
+                                                                selectedItems,
+                                                                setSelectedItems
+                                                            )
+                                                        }
+                                                    />
+
+                                                    <span>
+                                                        {item.item_name}
+                                                    </span>
+
+                                                </label>
+
+                                            ))
+                                        }
+
+                                    </div>
+
+                                </div>
+
+                            )
+                        }
+
+                    </div>
+
+                    {/* TYPE FILTER */}
+
+                    <div className="relative">
+
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setOpenTypes(
+                                    !openTypes
+                                )
+                            }
+                            className="
+rounded-2xl
+p-4
+bg-slate-50
+min-w-[220px]
+text-left
+flex
+justify-between
+items-center
+"
+                        >
+
+                            <span>
+
+                                {
+                                    selectedTypes.length === 0
+                                        ? "All Type"
+                                        : `${selectedTypes.length} type selected`
+                                }
+
+                            </span>
+
+                            <span>▼</span>
+
+                        </button>
+
+                        {
+                            openTypes && (
+
+                                <div
+                                    className="
+absolute
+z-20
+mt-2
+w-full
+bg-white
+border
+rounded-2xl
+shadow-xl
+p-4
+"
+                                >
+
+                                    <div className="flex gap-2 mb-4">
+
+                                        <button
+                                            onClick={() =>
+                                                selectAll(
+                                                    types,
+                                                    setSelectedTypes
+                                                )
+                                            }
+                                            className="
+text-xs
+px-3
+py-1
+rounded-xl
+bg-slate-100
+"
+                                        >
+
+                                            Select All
+
+                                        </button>
+
+                                        <button
+                                            onClick={() =>
+                                                clearAll(
+                                                    setSelectedTypes
+                                                )
+                                            }
+                                            className="
+text-xs
+px-3
+py-1
+rounded-xl
+bg-red-100
+text-red-600
+"
+                                        >
+
+                                            Clear
+
+                                        </button>
+
+                                    </div>
+
+                                    <div className="space-y-2">
+
+                                        {
+                                            types.map(type => (
+
+                                                <label
+                                                    key={type}
+                                                    className="
+flex
+items-center
+gap-3
+"
+                                                >
+
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={
+                                                            selectedTypes.includes(type)
+                                                        }
+                                                        onChange={() =>
+                                                            toggleValue(
+                                                                type,
+                                                                selectedTypes,
+                                                                setSelectedTypes
+                                                            )
+                                                        }
+                                                    />
+
+                                                    <span>
+                                                        {type}
+                                                    </span>
+
+                                                </label>
+
+                                            ))
+                                        }
+
+                                    </div>
+
+                                </div>
+
+                            )
+                        }
+
+                    </div>
+
+                    {/* START DATE */}
+
+                    <input
+                        type="date"
+                        value={startDate}
+                        onChange={e =>
+                            setStartDate(
+                                e.target.value
+                            )
+                        }
+                        className="
+rounded-2xl
+p-4
+bg-slate-50
+"
+                    />
+
+                    {/* END DATE */}
+
+                    <input
+                        type="date"
+                        value={endDate}
+                        onChange={e =>
+                            setEndDate(
+                                e.target.value
+                            )
+                        }
+                        className="
+rounded-2xl
+p-4
+bg-slate-50
+"
+                    />
+
+                    {/* EXPORT */}
+
+                    <button
+                        onClick={exportExcel}
+                        className="
+px-6
+py-4
+rounded-2xl
+bg-slate-900
+text-white
+font-semibold
+"
+                    >
+
+                        Export Excel
+
+                    </button>
+
+                </div>
+                {/* <table
                     className="
                     w-full
                     "
@@ -618,62 +1224,388 @@ export default function HistoryPage() {
                     <tbody>
 
                         {
-                            rows.map(
-                                row => (
+                            rows
+                                .slice(
+                                    (page - 1) * PAGE_SIZE,
+                                    page * PAGE_SIZE
+                                )
+                                .map(
+                                    row => (
 
-                                    <tr
-                                        key={
-                                            row.id
-                                        }
-                                        className="
+                                        <tr
+                                            key={
+                                                row.id
+                                            }
+                                            className="
                                         border-b
                                         h-16
                                         "
-                                    >
+                                        >
 
-                                        <td>
-                                            {
-                                                row.transaction_date
-                                            }
-                                        </td>
+                                            <td>
+                                                {
+                                                    row.transaction_date
+                                                }
+                                            </td>
 
-                                        <td>
-                                            {
-                                                row.items
-                                                    ?.item_name
-                                            }
-                                        </td>
+                                            <td>
+                                                {
+                                                    row.items
+                                                        ?.item_name
+                                                }
+                                            </td>
 
-                                        <td>
-                                            {
-                                                row.transaction_type
-                                            }
-                                        </td>
+                                            <td>
+                                                {
+                                                    row.transaction_type
+                                                }
+                                            </td>
 
-                                        <td>
+                                            <td>
 
-                                            {
-                                                row.qty
-                                            }
+                                                {
+                                                    row.qty
+                                                }
 
-                                            {" "}
+                                                {" "}
 
-                                            {
-                                                row.items
-                                                    ?.unit
-                                            }
+                                                {
+                                                    row.items
+                                                        ?.unit
+                                                }
 
-                                        </td>
+                                            </td>
 
-                                    </tr>
+                                        </tr>
 
+                                    )
                                 )
-                            )
                         }
 
                     </tbody>
 
-                </table>
+                </table> */}
+
+                <div
+                    className="
+bg-white
+rounded-[32px]
+border
+border-slate-200
+overflow-auto
+"
+                >
+
+                    <table
+                        className="
+w-full
+shadow-sm
+"
+                    >
+
+                        <thead>
+
+                            <tr
+                                className="
+border-b
+border-slate-200
+bg-slate-50
+"
+                            >
+
+                                <th
+                                    className="
+text-left
+p-6
+font-semibold
+"
+                                >
+
+                                    Date
+
+                                </th>
+
+                                <th
+                                    className="
+text-left
+p-6
+font-semibold
+"
+                                >
+
+                                    Item
+
+                                </th>
+
+                                <th
+                                    className="
+text-left
+p-6
+font-semibold
+"
+                                >
+
+                                    Type
+
+                                </th>
+
+                                <th
+                                    className="
+text-left
+p-6
+font-semibold
+"
+                                >
+
+                                    Qty
+
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {
+                                rows
+                                    .slice(
+                                        (page - 1) * PAGE_SIZE,
+                                        page * PAGE_SIZE
+                                    )
+                                    .map(row => (
+
+                                        <tr
+                                            key={row.id}
+                                            className="
+border-b
+border-slate-100
+hover:bg-slate-50/70
+transition
+"
+                                        >
+
+                                            <td
+                                                className="
+p-6
+text-slate-600
+"
+                                            >
+
+                                                {
+                                                    row.transaction_date
+                                                }
+
+                                            </td>
+
+                                            <td
+                                                className="
+p-6
+font-semibold
+text-[#0B132B]
+"
+                                            >
+
+                                                {
+                                                    row.items
+                                                        ?.item_name
+                                                }
+
+                                            </td>
+
+                                            <td
+                                                className="
+p-6
+"
+                                            >
+
+                                                <span
+                                                    className={
+
+                                                        row.transaction_type === "IN"
+
+                                                            ? `
+bg-emerald-100
+text-emerald-700
+px-3
+py-1
+rounded-full
+text-xs
+font-semibold
+`
+
+                                                            : `
+bg-red-100
+text-red-700
+px-3
+py-1
+rounded-full
+text-xs
+font-semibold
+`
+
+                                                    }
+                                                >
+
+                                                    {
+                                                        row.transaction_type
+                                                    }
+
+                                                </span>
+
+                                            </td>
+
+                                            <td
+                                                className="
+p-6
+font-medium
+"
+                                            >
+
+                                                {
+                                                    row.qty
+                                                }
+
+                                                {" "}
+
+                                                {
+                                                    row.items
+                                                        ?.unit
+                                                }
+
+                                            </td>
+
+                                        </tr>
+
+                                    ))
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+                {/* PAGINATION DI SINI */}
+
+                <div
+                    className="
+flex
+items-center
+justify-between
+mt-8
+"
+                >
+
+                    <div
+                        className="
+text-sm
+text-slate-500
+font-medium
+"
+                    >
+
+                        Showing
+
+                        {" "}
+
+                        {
+                            rows.length === 0
+                                ? 0
+                                : (page - 1) * PAGE_SIZE + 1
+                        }
+
+                        -
+
+                        {
+                            Math.min(
+                                page * PAGE_SIZE,
+                                rows.length
+                            )
+                        }
+
+                        {" "}of{" "}
+
+                        {rows.length}
+
+                        {" "}transactions
+
+                    </div>
+
+                    <div
+                        className="
+flex
+items-center
+gap-3
+"
+                    >
+
+                        <button
+                            disabled={
+                                page === 1
+                            }
+                            onClick={() =>
+                                setPage(
+                                    prev => prev - 1
+                                )
+                            }
+                            className="
+px-5
+py-2
+rounded-xl
+border
+disabled:opacity-40
+"
+                        >
+
+                            Previous
+
+                        </button>
+
+                        <div
+                            className="
+px-4
+py-2
+rounded-xl
+bg-slate-100
+text-sm
+font-semibold
+"
+                        >
+
+                            {page}
+
+                        </div>
+
+                        <button
+                            disabled={
+                                page >=
+                                Math.ceil(
+                                    rows.length
+                                    / PAGE_SIZE
+                                )
+                            }
+                            onClick={() =>
+                                setPage(
+                                    prev => prev + 1
+                                )
+                            }
+                            className="
+px-5
+py-2
+rounded-xl
+bg-slate-900
+text-white
+disabled:opacity-40
+"
+                        >
+
+                            Next
+
+                        </button>
+
+                    </div>
+
+                </div>
 
             </section>
 
