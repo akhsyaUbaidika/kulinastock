@@ -296,6 +296,22 @@ export default function StockPlanningPage() {
 
     }
 
+    function selectAllItems() {
+
+        setSelectedItems(
+            items.map(
+                item => item.id
+            )
+        );
+
+    }
+
+    function clearAllItems() {
+
+        setSelectedItems([]);
+
+    }
+
     return (
         <main className="min-h-screen px-8 py-8">
 
@@ -376,10 +392,11 @@ p-10
                                     <span>
 
                                         {
-                                            selectedItems.length ===
-                                                items.length
-                                                ? "Semua Item"
-                                                : `${selectedItems.length} item dipilih`
+                                            selectedItems.length === 0
+                                                ? "All Items"
+                                                : selectedItems.length === items.length
+                                                    ? "All Items"
+                                                    : `${selectedItems.length} item dipilih`
                                         }
 
                                     </span>
@@ -409,6 +426,40 @@ p-10
                     overflow-auto
                 "
                                         >
+                                            <div className="flex gap-2 mb-4">
+
+                                                <button
+                                                    onClick={selectAllItems}
+                                                    className="
+text-xs
+px-3
+py-1
+rounded-xl
+bg-slate-100
+"
+                                                >
+
+                                                    Select All
+
+                                                </button>
+
+                                                <button
+                                                    onClick={clearAllItems}
+                                                    className="
+text-xs
+px-3
+py-1
+rounded-xl
+bg-red-100
+text-red-600
+"
+                                                >
+
+                                                    Clear
+
+                                                </button>
+
+                                            </div>
 
                                             <div className="space-y-3">
 
