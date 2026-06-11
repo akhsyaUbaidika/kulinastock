@@ -6,9 +6,6 @@ import {
     useState
 } from "react";
 
-import {
-    useSearchParams
-} from "next/navigation";
 
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -42,12 +39,20 @@ export default function StockPlanningPage() {
     const [openItems, setOpenItems] =
         useState(false);
 
-    const searchParams =
-        useSearchParams();
+    const [autoSelectedItem,
+        setAutoSelectedItem] =
+        useState(null);
 
-    const autoSelectedItem =
-        searchParams.get("item");
+    useEffect(() => {
 
+        const item =
+            new URLSearchParams(
+                window.location.search
+            ).get("item");
+
+        setAutoSelectedItem(item);
+
+    }, []);
     /*
     ========================
     LOAD ITEMS
@@ -57,11 +62,7 @@ export default function StockPlanningPage() {
     useEffect(() => {
 
         fetch("/api/items")
-
-            .then(res =>
-                res.json()
-            )
-
+            .then(res => res.json())
             .then(data => {
 
                 const itemList =
@@ -87,7 +88,7 @@ export default function StockPlanningPage() {
 
             });
 
-    }, []);
+    }, [autoSelectedItem]);
 
     useEffect(() => {
 
