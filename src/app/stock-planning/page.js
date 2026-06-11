@@ -561,7 +561,7 @@ text-red-600
 
                     </div>
 
-                    <button
+                    {/* <button
                         onClick={
                             generatePrediction
                         }
@@ -570,7 +570,7 @@ text-red-600
 
                         Generate Prediksi
 
-                    </button>
+                    </button> */}
                     <button
                         onClick={exportExcel}
                         className="
