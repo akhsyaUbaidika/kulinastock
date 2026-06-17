@@ -67,7 +67,7 @@ export function middleware(request) {
 
         const allowed =
             [
-                "/overview",
+                "/dataset-preview",
                 "/forecast-lab"
             ];
 
@@ -83,7 +83,7 @@ export function middleware(request) {
 
             return NextResponse.redirect(
                 new URL(
-                    "/forecast-lab",
+                    "/dataset-preview",
                     request.url
                 )
             );
@@ -104,7 +104,7 @@ export function middleware(request) {
 
         const blocked =
             [
-                "/overview",
+                "/dataset-preview",
                 "/forecast-lab"
             ];
 

@@ -1,27 +1,81 @@
 import { supabase } from "@/lib/supabase";
 
-export async function GET() {
+import { cookies }
+    from "next/headers";
+
+export async function GET(request) {
 
     try {
+
+        const { searchParams } =
+            new URL(request.url);
+
+        const itemId =
+            searchParams.get(
+                "item_id"
+            );
+
+        // const {
+        //     data,
+        //     error
+        // } = await supabase
+        //     .from("stock_transactions")
+        //     .select(`
+        //         id,
+        //         transaction_type,
+        //         qty,
+        //         transaction_date,
+        //         created_at,
+        //         items (
+        //             id,
+        //             item_name,
+        //             unit
+        //         )
+        //     `)
+        //     .order(
+        //         "id",
+        //         {
+        //             ascending: false
+        //         }
+        //     );
+
+        let query =
+            supabase
+
+                .from(
+                    "stock_transactions"
+                )
+
+                .select(`
+            id,
+            item_id,
+            transaction_type,
+            qty,
+            transaction_date,
+            created_at,
+            items (
+                id,
+                item_name,
+                unit
+            )
+        `);
+
+        if (itemId) {
+
+            query =
+                query.eq(
+                    "item_id",
+                    itemId
+                );
+
+        }
 
         const {
             data,
             error
-        } = await supabase
-            .from("stock_transactions")
-            .select(`
-                id,
-                transaction_type,
-                qty,
-                transaction_date,
-                created_at,
-                items (
-                    id,
-                    item_name,
-                    unit
-                )
-            `)
-            .order(
+        }
+            =
+            await query.order(
                 "id",
                 {
                     ascending: false
@@ -104,18 +158,40 @@ export async function POST(
             await request.json();
 
         const {
+            transactions,
+            skip_validation = false
+        } = body;
+        console.log({
+            transactions: transactions.length,
+            skip_validation
+        });
 
-            item_id,
+        const cookieStore =
+            await cookies();
 
-            transaction_type,
+        const auth =
+            cookieStore.get(
+                "kulinastock_auth"
+            );
 
-            qty
+        if (!auth) {
+
+            return Response.json(
+                {
+                    success: false,
+                    message: "Unauthorized"
+                },
+                {
+                    status: 401
+                }
+            );
 
         }
 
-            =
-
-            body;
+        const user =
+            JSON.parse(
+                auth.value
+            );
 
         const {
 
@@ -127,28 +203,20 @@ export async function POST(
 
             await supabase.rpc(
 
-                "apply_stock_transaction",
+                "apply_stock_transactions_bulk",
 
                 {
 
-                    p_item_id:
-                        Number(item_id),
+                    p_transactions:
+                        transactions,
 
                     p_user_id:
-                        1,
+                        user.id,
 
-                    p_type:
-                        transaction_type,
-
-                    p_qty:
-                        Number(qty),
-
-                    p_date:
-                        new Date()
-                            .toISOString()
-                            .split("T")[0]
+                    p_skip_validation: skip_validation
 
                 }
+
 
             );
 

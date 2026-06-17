@@ -1,16 +1,84 @@
-export function SES(data, alpha = 0.3) {
-    if (!data || data.length === 0) return [];
+export function SES(
 
-    let result = [];
-    let prevForecast = data[0];
+    series,
 
-    result.push(prevForecast);
+    horizon = 7,
 
-    for (let i = 1; i < data.length; i++) {
-        let forecast = alpha * data[i - 1] + (1 - alpha) * prevForecast;
-        result.push(forecast);
-        prevForecast = forecast;
+    alpha = 0.3
+
+) {
+
+    if (
+        !series ||
+        series.length === 0
+    ) {
+
+        return {
+
+            model: "SES",
+
+            fitted: [],
+
+            forecast: [],
+
+            nextValue: 0
+
+        };
     }
 
-    return result;
+    const fitted = [];
+
+    fitted[0] = series[0];
+
+    for (
+        let i = 1;
+        i < series.length;
+        i++
+    ) {
+
+        fitted[i] =
+
+            alpha *
+            series[i - 1]
+
+            +
+
+            (1 - alpha)
+            *
+            fitted[i - 1];
+
+    }
+
+    const lastForecast =
+
+        fitted[
+        fitted.length - 1
+        ];
+
+    const forecast =
+
+        Array(horizon)
+
+            .fill(
+
+                Number(
+                    lastForecast
+                        .toFixed(2)
+                )
+
+            );
+
+    return {
+
+        model:
+            "SES",
+
+        fitted,
+
+        forecast,
+
+        nextValue:
+            forecast[0]
+
+    };
 }

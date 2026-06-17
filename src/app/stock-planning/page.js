@@ -559,6 +559,23 @@ text-red-600
 
                         </div>
 
+                        <button
+                            onClick={exportExcel}
+                            className="
+        mt-8
+        ml-4
+        bg-slate-900
+        text-white
+        px-8
+        py-4
+        rounded-2xl
+        font-semibold
+    "
+                        >
+
+                            Export Excel
+
+                        </button>
                     </div>
 
                     {/* <button
@@ -571,23 +588,7 @@ text-red-600
                         Generate Prediksi
 
                     </button> */}
-                    <button
-                        onClick={exportExcel}
-                        className="
-        mt-8
-        ml-4
-        bg-slate-900
-        text-white
-        px-8
-        py-4
-        rounded-2xl
-        font-semibold
-    "
-                    >
 
-                        Export Excel
-
-                    </button>
 
                 </div>
 

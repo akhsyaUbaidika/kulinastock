@@ -2,7 +2,18 @@ export default function RecommendationCard({
     recommendation
 }) {
     return (
-        <div className="bg-white border rounded-3xl p-8">
+        <div
+            className="
+rounded-[32px]
+bg-gradient-to-br
+from-blue-600
+to-indigo-700
+text-white
+p-10
+shadow-sm
+mb-8
+"
+        >
             <h2 className="text-2xl font-bold mb-6">
                 Inventory Recommendation
             </h2>
@@ -10,7 +21,7 @@ export default function RecommendationCard({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
 
                 <div>
-                    <p className="text-gray-500 text-sm">
+                    <p className="text-white-500 text-sm">
                         Current Stock
                     </p>
 
@@ -20,7 +31,7 @@ export default function RecommendationCard({
                 </div>
 
                 <div>
-                    <p className="text-gray-500 text-sm">
+                    <p className="text-white-500 text-sm">
                         Predicted Need
                     </p>
 
@@ -30,17 +41,17 @@ export default function RecommendationCard({
                 </div>
 
                 <div>
-                    <p className="text-gray-500 text-sm">
+                    <p className="text-white-500 text-sm">
                         Suggested Restock
                     </p>
 
-                    <h3 className="text-3xl font-bold text-orange-500">
+                    <h3 className="text-3xl font-bold text-yellow-200">
                         {recommendation.suggested_restock}
                     </h3>
                 </div>
 
                 <div>
-                    <p className="text-gray-500 text-sm">
+                    <p className="text-white-500 text-sm">
                         Status
                     </p>
 

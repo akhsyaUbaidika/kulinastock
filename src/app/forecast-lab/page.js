@@ -7,6 +7,26 @@ import HistoricalDatasetTable from "@/components/forecast/HistoricalDatasetTable
 import MethodEvaluationTable from "@/components/forecast/MethodEvaluationTable";
 import PredictionTable from "@/components/forecast/PredictionTable";
 import RecommendationCard from "@/components/forecast/RecommendationCard";
+import KPICards
+    from "@/components/forecast/cards/KPICards";
+import DatasetSummaryCard
+    from "@/components/forecast/cards/DatasetSummaryCard";
+import HistoricalChart
+    from "@/components/forecast/charts/HistoricalChart";
+import ForecastChart
+    from "@/components/forecast/charts/ForecastChart";
+import MethodRankingTable
+    from "@/components/forecast/tables/MethodRankingTable";
+import BestMethodCard
+    from "@/components/forecast/cards/BestMethodCard";
+import WeeklyHeatmap
+    from "@/components/forecast/charts/WeeklyHeatmap";
+import ExplanationCard
+    from "@/components/forecast/cards/ExplanationCard";
+import DiagnosticCard
+    from "@/components/forecast/cards/DiagnosticCard";
+import RecommendationCardV2
+    from "@/components/forecast/cards/RecommendationCardV2";
 
 export default function ForecastLabPage() {
 
@@ -57,7 +77,13 @@ export default function ForecastLabPage() {
         const result =
             await response.json();
 
-        setHistoryData(result.data || []);
+        const outHistory =
+            (result.data || []).filter(
+                row =>
+                    row.transaction_type === "OUT"
+            );
+
+        setHistoryData(outHistory);
     }
 
     async function runAnalysis() {
@@ -89,7 +115,7 @@ export default function ForecastLabPage() {
         const result =
             await response.json();
 
-        setForecastResult(result.data);
+        setForecastResult(result);
     }
 
     /*
@@ -116,138 +142,211 @@ PAGINATION
         );
 
     return (
-        <div className="p-10">
+        <main className="
+min-h-screen
+px-8
+py-8
+">
 
-            <div className="mb-10">
-                <p className="uppercase tracking-[0.3em] text-blue-500 text-sm">
-                    Forecast Analysis Workspace
-                </p>
 
-                <h1 className="text-7xl font-bold mb-4">
-                    Forecast Lab
-                </h1>
+            <div className="mb-8">
+                <div
+                    className="
+rounded-[32px]
+bg-gradient-to-br
+from-white
+to-blue-50
+border
+border-slate-200/60
+p-10
+"
+                >
+                    <p className="uppercase tracking-[0.3em] text-blue-500 text-sm">
+                        Forecast Analysis Workspace
+                    </p>
 
-                <p className="text-2xl text-gray-500">
-                    Analyst forecasting workspace.
-                </p>
+                    <h1 className="text-7xl font-bold mb-4">
+                        Forecast Lab
+                    </h1>
+
+                    <p className="text-2xl text-gray-500">
+                        Analyst forecasting workspace.
+                    </p>
+                </div>
             </div>
+            <div className="space-y-8">
 
-            <DatasetSelector
-                items={items}
-                selectedItem={selectedItem}
-                setSelectedItem={setSelectedItem}
-                horizon={horizon}
-                setHorizon={setHorizon}
-                splitRatio={splitRatio}
-                setSplitRatio={setSplitRatio}
-                onRunAnalysis={runAnalysis}
-            />
+                <DatasetSelector
+                    items={items}
+                    selectedItem={selectedItem}
+                    setSelectedItem={setSelectedItem}
+                    horizon={horizon}
+                    setHorizon={setHorizon}
+                    splitRatio={splitRatio}
+                    setSplitRatio={setSplitRatio}
+                    onRunAnalysis={runAnalysis}
+                />
 
-            {/* <HistoricalDatasetTable
+                {/* <HistoricalDatasetTable
                 data={historyData}
             /> */}
 
-            <HistoricalDatasetTable
-                data={paginatedHistory}
-            />
+                <HistoricalDatasetTable
+                    data={paginatedHistory}
+                />
 
-            {/* PAGINATION */}
+                {/* PAGINATION */}
 
-            {
-                historyData.length > 0 && (
+                {
+                    historyData.length > 0 && (
 
-                    <div
-                        className="
+                        <div
+                            className="
 flex
 items-center
 justify-between
 mt-4
 mb-8
 "
-                    >
+                        >
 
-                        <div
-                            className="
+                            <div
+                                className="
 text-sm
 text-slate-500
 "
-                        >
+                            >
 
-                            Page {page} of {totalPages || 1}
+                                Page {page} of {totalPages || 1}
 
-                        </div>
+                            </div>
 
-                        <div className="flex gap-3">
+                            <div className="flex gap-3">
 
-                            <button
-                                disabled={
-                                    page === 1
-                                }
-                                onClick={() =>
-                                    setPage(
-                                        page - 1
-                                    )
-                                }
-                                className="
+                                <button
+                                    disabled={
+                                        page === 1
+                                    }
+                                    onClick={() =>
+                                        setPage(
+                                            page - 1
+                                        )
+                                    }
+                                    className="
 btn-secondary
 "
-                            >
+                                >
 
-                                Previous
+                                    Previous
 
-                            </button>
+                                </button>
 
-                            <button
-                                disabled={
-                                    page === totalPages
-                                    ||
-                                    totalPages === 0
-                                }
-                                onClick={() =>
-                                    setPage(
-                                        page + 1
-                                    )
-                                }
-                                className="
+                                <button
+                                    disabled={
+                                        page === totalPages
+                                        ||
+                                        totalPages === 0
+                                    }
+                                    onClick={() =>
+                                        setPage(
+                                            page + 1
+                                        )
+                                    }
+                                    className="
 btn-primary
 "
-                            >
+                                >
 
-                                Next
+                                    Next
 
-                            </button>
+                                </button>
+
+                            </div>
 
                         </div>
 
-                    </div>
+                    )
+                }
 
-                )
-            }
+                {forecastResult && (
+                    <>
+                        <KPICards
+                            result={forecastResult}
+                        />
+                        <RecommendationCardV2
+                            result={
+                                forecastResult.recommendation
+                            }
+                        />
+                        <DatasetSummaryCard
+                            summary={
+                                forecastResult.dataset_summary
+                            }
+                        />
+                        <HistoricalChart
+                            data={
+                                forecastResult.historical_series
+                            }
+                        />
+                        <ForecastChart
+                            historical={
+                                forecastResult.historical_series
+                            }
+                            predictions={
+                                forecastResult.predictions
+                            }
+                            adjusted={
+                                forecastResult.adjusted_predictions
+                            }
+                        />
+                        <MethodRankingTable
+                            ranking={
+                                forecastResult.ranking
+                            }
+                        />
+                        <BestMethodCard
+                            method={
+                                forecastResult.best_method
+                            }
+                        />
+                        <WeeklyHeatmap
+                            weeklyPattern={
+                                forecastResult.weekly_pattern
+                            }
+                        />
+                        <ExplanationCard
+                            explanation={
+                                forecastResult.explanation
+                            }
+                        />
+                        <DiagnosticCard
+                            diagnostic={
+                                forecastResult.diagnostic
+                            }
+                        />
+                        <MethodEvaluationTable
+                            methods={
+                                forecastResult.methods
+                            }
+                            bestMethod={
+                                forecastResult.best_method
+                            }
+                        />
 
-            {forecastResult && (
-                <>
-                    <MethodEvaluationTable
-                        methods={
-                            forecastResult.methods
-                        }
-                        bestMethod={
-                            forecastResult.best_method
-                        }
-                    />
+                        <PredictionTable
+                            predictions={
+                                forecastResult.predictions
+                            }
+                        />
 
-                    <PredictionTable
-                        predictions={
-                            forecastResult.predictions
-                        }
-                    />
-
-                    <RecommendationCard
-                        recommendation={
-                            forecastResult.recommendation
-                        }
-                    />
-                </>
-            )}
-        </div>
+                        <RecommendationCard
+                            recommendation={
+                                forecastResult.recommendation
+                            }
+                        />
+                    </>
+                )}
+            </div>
+        </main>
     );
 }

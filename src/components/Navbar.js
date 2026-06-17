@@ -99,10 +99,10 @@ const menusByRole = {
 
         {
             name:
-                "Overview",
+                "Dataset Preview",
 
             href:
-                "/overview",
+                "/dataset-preview",
 
             icon:
                 Database,
@@ -169,10 +169,10 @@ const menusByRole = {
 
         {
             name:
-                "Overview",
+                "Dataset Preview",
 
             href:
-                "/overview",
+                "/dataset-preview",
 
             icon:
                 Database,

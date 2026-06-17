@@ -7,6 +7,7 @@ export async function GET() {
         const [
             itemsRes,
             txRes,
+            forecastRes,
         ] = await Promise.all([
 
             supabase
@@ -14,10 +15,13 @@ export async function GET() {
                 .select("*"),
 
             supabase
-                .from(
-                    "stock_transactions"
-                )
-                .select("*")
+                .from("stock_transactions")
+                .select("*", {
+                    count: "exact",
+                    head: true
+                }),
+            supabase
+                .rpc("get_forecast_ready_count")
 
         ]);
 
@@ -53,9 +57,9 @@ export async function GET() {
             itemsRes.data ||
             [];
 
-        const tx =
-            txRes.data ||
-            [];
+        // const tx =
+        //     txRes.data ||
+        //     [];
 
 
 
@@ -87,49 +91,54 @@ export async function GET() {
 
 
         const historicalRecords =
-            tx.length;
+            txRes.count || 0;
 
 
 
-        const txCount =
-            {};
+        // const txCount =
+        //     {};
 
-        tx.forEach(
-            row => {
+        // const forecastReady = 0;
 
-                txCount[
-                    row.item_id
-                ] =
+        // tx.forEach(
+        //     row => {
 
-                    (
-                        txCount[
-                        row.item_id
-                        ]
+        //         txCount[
+        //             row.item_id
+        //         ] =
 
-                        ||
+        //             (
+        //                 txCount[
+        //                 row.item_id
+        //                 ]
 
-                        0
-                    )
+        //                 ||
 
-                    +
+        //                 0
+        //             )
 
-                    1;
+        //             +
 
-            }
-        );
+        //             1;
+
+        //     }
+        // );
 
 
+
+        // const forecastReady =
+        //     Object
+        //         .values(
+        //             txCount
+        //         )
+        //         .filter(
+        //             v =>
+        //                 v >= 7
+        //         )
+        //         .length;
 
         const forecastReady =
-            Object
-                .values(
-                    txCount
-                )
-                .filter(
-                    v =>
-                        v >= 7
-                )
-                .length;
+            forecastRes.data || 0;
 
 
 

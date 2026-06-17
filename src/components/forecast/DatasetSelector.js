@@ -11,7 +11,43 @@ export default function DatasetSelector({
     onRunAnalysis
 }) {
     return (
-        <div className="bg-white border rounded-3xl p-8 mb-8">
+        <div
+            className="
+bg-white
+rounded-[32px]
+p-10
+border
+border-slate-200
+shadow-sm
+mb-8
+"
+        >
+            <div className="mb-8">
+
+                <p
+                    className="
+uppercase
+tracking-[0.25em]
+text-blue-600
+text-xs
+font-semibold
+mb-2
+"
+                >
+                    Configuration
+                </p>
+
+                <h2
+                    className="
+text-3xl
+font-bold
+text-[#0B132B]
+"
+                >
+                    Forecast Settings
+                </h2>
+
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
 
                 <div>

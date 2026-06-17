@@ -1,19 +1,158 @@
-export function Holt(data, alpha = 0.3, beta = 0.1) {
-    if (data.length < 2) return data;
+export function Holt(
 
-    let level = data[0];
-    let trend = data[1] - data[0];
+    series,
 
-    let result = [];
+    horizon = 7,
 
-    for (let i = 0; i < data.length; i++) {
-        let prevLevel = level;
+    alpha = 0.3,
 
-        level = alpha * data[i] + (1 - alpha) * (level + trend);
-        trend = beta * (level - prevLevel) + (1 - beta) * trend;
+    beta = 0.1
 
-        result.push(level + trend);
+) {
+
+    if (
+        !series ||
+        series.length < 2
+    ) {
+
+        return {
+
+            model:
+                "Holt",
+
+            fitted: [],
+
+            forecast: [],
+
+            nextValue: 0
+        };
     }
 
-    return result;
+    let level =
+        series[0];
+
+    let trend =
+        series[1]
+        -
+        series[0];
+
+    const fitted = [];
+
+    for (
+        let i = 1;
+        i < series.length;
+        i++
+    ) {
+
+        const prevLevel =
+            level;
+
+        level =
+
+            alpha
+            *
+            series[i]
+
+            +
+
+            (
+                1 - alpha
+            )
+
+            *
+
+            (
+                level +
+                trend
+            );
+
+        trend =
+
+            beta
+            *
+
+            (
+                level -
+                prevLevel
+            )
+
+            +
+
+            (
+                1 - beta
+            )
+            *
+            trend;
+
+        fitted.push(
+            level +
+            trend
+        );
+    }
+
+    const forecast = [];
+
+    for (
+        let h = 1;
+        h <= horizon;
+        h++
+    ) {
+
+        // forecast.push(
+
+        //     Number(
+
+        //         (
+        //             level
+        //             +
+        //             (
+        //                 h *
+        //                 trend
+        //             )
+        //         )
+
+        //             .toFixed(2)
+
+        //     )
+
+        // );
+
+        forecast.push(
+
+            Math.max(
+
+                0,
+
+                Number(
+
+                    (
+                        level
+                        +
+                        (
+                            h *
+                            trend
+                        )
+                    )
+
+                        .toFixed(2)
+
+                )
+
+            )
+
+        );
+    }
+
+    return {
+
+        model:
+            "Holt",
+
+        fitted,
+
+        forecast,
+
+        nextValue:
+            forecast[0]
+    };
 }

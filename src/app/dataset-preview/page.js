@@ -10,7 +10,7 @@ import {
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
-export default function OverviewPage() {
+export default function DatasetPreviewPage() {
 
     /*
     =========================
@@ -27,7 +27,7 @@ export default function OverviewPage() {
     const [page, setPage] =
         useState(1);
 
-    const PAGE_SIZE = 25;
+    const PAGE_SIZE = 10;
 
     /*
     =========================
@@ -374,7 +374,7 @@ export default function OverviewPage() {
 
             workbook,
             worksheet,
-            "Overview"
+            "Data Preview"
 
         );
 
@@ -398,29 +398,49 @@ export default function OverviewPage() {
 
         saveAs(
             blob,
-            "overview-data.xlsx"
+            "Data-Preview.xlsx"
         );
 
     }
 
     return (
 
-        <div className="p-10 space-y-8">
+        <main className="
+min-h-screen
+px-8
+py-8
+">
 
-            <div>
+            <div className="mb-8">
+                <div
+                    className="
+rounded-[32px]
+bg-gradient-to-br
+from-white
+to-blue-50
+border
+border-slate-200/60
+p-10
+"
+                >
+                    <p className="uppercase tracking-[0.3em] text-blue-500 text-sm">
+                        Preview Data
+                    </p>
 
-                <h1 className="text-5xl font-bold">
 
-                    Overview
+                    <h1 className="text-7xl font-bold">
 
-                </h1>
+                        Dataset Preview
 
-                <p className="text-slate-500 mt-3">
+                    </h1>
 
-                    Historical forecasting data preview.
+                    <p className="text-2xl text-slate-500 mt-3">
 
-                </p>
+                        Review and validate historical inventory data before forecasting.
 
+                    </p>
+
+                </div>
             </div>
 
             {/* FILTER */}
@@ -1176,7 +1196,7 @@ btn-primary
 
             </div>
 
-        </div>
+        </main>
 
     );
 

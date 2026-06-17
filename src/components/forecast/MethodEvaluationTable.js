@@ -3,18 +3,52 @@ export default function MethodEvaluationTable({
     bestMethod
 }) {
     return (
-        <div className="bg-white border rounded-3xl p-8 mb-8">
-            <h2 className="text-2xl font-bold mb-6">
-                Method Evaluation
-            </h2>
+        <div className="bg-white
+rounded-[32px]
+border
+border-slate-200
+shadow-sm
+p-8
+mb-8">
+            <div className="mb-8">
+
+                <p
+                    className="
+uppercase
+tracking-[0.25em]
+text-blue-600
+text-xs
+font-semibold
+mb-2
+"
+                >
+                    Evaluation
+                </p>
+
+                <h2
+                    className="
+text-3xl
+font-bold
+"
+                >
+                    Model Comparison
+                </h2>
+
+            </div>
 
             <table className="w-full">
                 <thead>
-                    <tr className="border-b">
-                        <th className="text-left py-3">Method</th>
-                        <th className="text-left py-3">MAE</th>
-                        <th className="text-left py-3">MAPE</th>
-                        <th className="text-left py-3">RMSE</th>
+                    <tr
+                        className="
+bg-slate-50
+border-b
+border-slate-200
+"
+                    >
+                        <th className="p-6 text-left py-3">Method</th>
+                        <th className="p-6 text-left py-3">MAE</th>
+                        <th className="p-6 text-left py-3">MAPE</th>
+                        <th className="p-6 text-left py-3">RMSE</th>
                     </tr>
                 </thead>
 
@@ -22,18 +56,21 @@ export default function MethodEvaluationTable({
                     {methods.map((method) => (
                         <tr
                             key={method.name}
-                            className={`border-b ${bestMethod?.name === method.name
-                                    ? "bg-green-50"
-                                    : ""
-                                }`}
+                            className={`
+${bestMethod?.name === method.name
+                                    ? "border-b border-slate-100 hover:bg-slate-50/70 transition bg-blue-50 border-b ring-1 ring-blue-100"
+                                    : "border-b border-slate-100 hover:bg-slate-50/70 transition"
+                                }
+                                `}
                         >
-                            <td className="py-4 font-semibold">
+                            <td className="p-6 font-semibold">
                                 {method.name}
                             </td>
 
-                            <td>{method.mae}</td>
-                            <td>{method.mape}%</td>
-                            <td>{method.rmse}</td>
+                            <td className="p-6 font-semibold">
+                                {method.mae}</td>
+                            <td className="p-6 font-semibold">{method.mape}%</td>
+                            <td className="p-6 font-semibold">{method.rmse}</td>
                         </tr>
                     ))}
                 </tbody>

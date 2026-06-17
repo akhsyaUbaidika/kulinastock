@@ -5,6 +5,10 @@ import { useEffect, useMemo, useState } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
+import {
+    Trash2
+} from "lucide-react";
+
 export default function HistoryPage() {
 
     const [history, setHistory] = useState(null);
@@ -20,20 +24,31 @@ export default function HistoryPage() {
             .toISOString()
             .split("T")[0];
 
-    const [form, setForm] =
-        useState({
+    // const [form, setForm] =
+    //     useState({
 
-            item_id: "",
+    //         item_id: "",
 
-            transaction_type:
-                "OUT",
+    //         transaction_type:
+    //             "OUT",
 
-            qty: 1,
+    //         qty: 1,
 
-            transaction_date:
-                today,
+    //         transaction_date:
+    //             today,
 
-        });
+    //     });
+
+    const [transactions,
+        setTransactions] =
+        useState([
+            {
+                item_id: "",
+                transaction_type: "OUT",
+                qty: 1,
+                transaction_date: today,
+            }
+        ]);
 
     // const [filter,
     //     setFilter] =
@@ -142,23 +157,30 @@ export default function HistoryPage() {
                     body:
                         JSON.stringify({
 
-                            item_id:
-                                Number(
-                                    form.item_id
-                                ),
+                            transactions:
+                                transactions.map(
+                                    trx => ({
 
-                            transaction_type:
-                                form.transaction_type,
+                                        item_id:
+                                            Number(
+                                                trx.item_id
+                                            ),
 
-                            qty:
-                                Number(
-                                    form.qty
-                                ),
+                                        transaction_type:
+                                            trx.transaction_type,
 
-                            transaction_date:
-                                form.transaction_date,
+                                        qty:
+                                            Number(
+                                                trx.qty
+                                            ),
 
-                        }),
+                                        transaction_date:
+                                            trx.transaction_date,
+
+                                    })
+                                )
+
+                        })
 
                 }
 
@@ -179,23 +201,85 @@ export default function HistoryPage() {
 
         }
 
-        setForm({
+        // setForm({
 
-            item_id:
-                "",
+        //     item_id:
+        //         "",
 
-            transaction_type:
-                "OUT",
+        //     transaction_type:
+        //         "OUT",
 
-            qty:
-                1,
+        //     qty:
+        //         1,
 
-            transaction_date:
-                today,
+        //     transaction_date:
+        //         today,
 
-        });
+        // });
+
+        setTransactions([
+            {
+                item_id: "",
+                transaction_type: "OUT",
+                qty: 1,
+                transaction_date: today,
+            }
+        ]);
 
         load();
+
+    }
+
+    function addRow() {
+
+        setTransactions(prev => [
+
+            ...prev,
+
+            {
+                item_id: "",
+                transaction_type: "OUT",
+                qty: 1,
+                transaction_date: today,
+            }
+
+        ]);
+
+    }
+
+    function removeRow(index) {
+
+        setTransactions(prev =>
+            prev.filter(
+                (_, i) => i !== index
+            )
+        );
+
+    }
+
+    function updateRow(
+        index,
+        field,
+        value
+    ) {
+
+        setTransactions(prev => {
+
+            const updated =
+                [...prev];
+
+            updated[index] = {
+
+                ...updated[index],
+
+                [field]:
+                    value
+
+            };
+
+            return updated;
+
+        });
 
     }
 
@@ -535,17 +619,51 @@ export default function HistoryPage() {
                 "
             >
 
-                <h2
+                <div
                     className="
-                    text-3xl
-                    font-bold
-                    mb-6
-                    "
+    flex
+    items-center
+    justify-between
+    mb-6
+    "
                 >
-                    Add Transaction
-                </h2>
 
-                <form
+                    <h2
+                        className="
+        text-3xl
+        font-bold
+        "
+                    >
+                        Add Transaction
+                    </h2>
+
+                    <span className="text-sm text-slate-500">
+                        {transactions.length} items
+                    </span>
+
+                    <button
+                        type="button"
+                        onClick={addRow}
+                        className="
+        px-5
+        py-3
+        rounded-2xl
+        border
+        border-slate-200
+        bg-white
+        text-slate-700
+        font-medium
+        hover:bg-slate-50
+        transition
+        font-bold
+        "
+                    >
+                        + Add Row
+                    </button>
+
+                </div>
+
+                {/* <form
                     onSubmit={
                         submit
                     }
@@ -708,7 +826,206 @@ export default function HistoryPage() {
 
                     </button>
 
+                </form> */}
+                <form
+                    onSubmit={submit}
+                    className="space-y-3"
+                >
+
+                    {
+                        transactions.map(
+                            (trx, index) => (
+
+                                <div
+                                    key={index}
+                                    className="
+                    grid
+                    grid-cols-[2fr_1fr_1fr_1fr_auto]
+gap-3
+                    "
+                                >
+
+                                    <select
+                                        required
+                                        value={trx.item_id}
+                                        onChange={e =>
+                                            updateRow(
+                                                index,
+                                                "item_id",
+                                                e.target.value
+                                            )
+                                        }
+                                        className="
+                        h-16
+                        rounded-3xl
+                        px-5
+                        bg-slate-50
+                        "
+                                    >
+
+                                        <option value="">
+                                            Select Item
+                                        </option>
+
+                                        {
+                                            items.map(item => (
+
+                                                <option
+                                                    key={item.id}
+                                                    value={item.id}
+                                                >
+
+                                                    {item.item_name}
+
+                                                </option>
+
+                                            ))
+                                        }
+
+                                    </select>
+
+                                    <select
+                                        value={trx.transaction_type}
+                                        onChange={e =>
+                                            updateRow(
+                                                index,
+                                                "transaction_type",
+                                                e.target.value
+                                            )
+                                        }
+                                        className="
+                        h-16
+                        rounded-3xl
+                        px-5
+                        bg-slate-50
+                        "
+                                    >
+
+                                        <option value="IN">
+                                            IN
+                                        </option>
+
+                                        <option value="OUT">
+                                            OUT
+                                        </option>
+
+                                    </select>
+
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={trx.qty}
+                                        onChange={e =>
+                                            updateRow(
+                                                index,
+                                                "qty",
+                                                e.target.value
+                                            )
+                                        }
+                                        className="
+                        h-16
+                        rounded-3xl
+                        px-5
+                        bg-slate-50
+                        "
+                                    />
+
+                                    <input
+                                        type="date"
+                                        value={trx.transaction_date}
+                                        onChange={e =>
+                                            updateRow(
+                                                index,
+                                                "transaction_date",
+                                                e.target.value
+                                            )
+                                        }
+                                        className="
+                        h-16
+                        rounded-3xl
+                        px-5
+                        bg-slate-50
+                        "
+                                    />
+
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            removeRow(index)
+                                        }
+                                        disabled={
+                                            transactions.length === 1
+                                        }
+                                        className="
+    h-14
+    w-14
+    rounded-2xl
+    border
+    border-slate-200
+    bg-red
+    flex
+    items-center
+    justify-center
+    text-red-500
+    hover:text-slate-800
+    hover:bg-red-50
+    disabled:opacity-30
+    transition
+    "
+                                    >
+
+                                        <Trash2
+                                            size={18}
+                                        />
+
+                                    </button>
+
+                                </div>
+
+                            )
+                        )
+                    }
+
+                    <div
+                        className="
+        flex
+        gap-4
+        "
+                    >
+
+
+
+                    </div>
+
                 </form>
+                <div
+                    className="
+    flex
+    justify-end
+    pt-4
+    "
+                >
+
+                    <button
+                        type="submit"
+                        className="
+        h-14
+        px-8
+        rounded-2xl
+        bg-blue-600
+        text-white
+        font-semibold
+        hover:bg-blue-700
+        transition
+        "
+                    >
+
+                        Save All
+
+                    </button>
+
+                </div>
+
 
             </section>
 

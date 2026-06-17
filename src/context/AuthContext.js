@@ -107,7 +107,7 @@ export function AuthProvider({
         ) {
 
             router.push(
-                "/forecast-lab"
+                "/dataset-preview"
             );
 
             return;

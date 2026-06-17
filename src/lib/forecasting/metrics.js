@@ -8,15 +8,67 @@ export function MAE(actual, forecast) {
     return sum / actual.length;
 }
 
-export function MAPE(actual, forecast) {
+// export function MAPE(actual, forecast) {
+//     let sum = 0;
+
+//     for (let i = 0; i < actual.length; i++) {
+//         if (actual[i] === 0) continue;
+//         sum += Math.abs((actual[i] - forecast[i]) / actual[i]);
+//     }
+
+//     return (sum / actual.length) * 100;
+// }
+
+export function MAPE(
+    actual,
+    forecast
+) {
+
     let sum = 0;
 
-    for (let i = 0; i < actual.length; i++) {
-        if (actual[i] === 0) continue;
-        sum += Math.abs((actual[i] - forecast[i]) / actual[i]);
+    let count = 0;
+
+    for (
+        let i = 0;
+        i < actual.length;
+        i++
+    ) {
+
+        if (
+            actual[i] === 0
+        ) {
+            continue;
+        }
+
+        sum += Math.abs(
+
+            (
+                actual[i]
+                -
+                forecast[i]
+            )
+
+            /
+
+            actual[i]
+
+        );
+
+        count++;
     }
 
-    return (sum / actual.length) * 100;
+    if (
+        count === 0
+    ) {
+
+        return 0;
+
+    }
+
+    return (
+        sum / count
+    ) * 100;
+
 }
 
 export function RMSE(actual, forecast) {
