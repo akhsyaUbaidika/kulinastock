@@ -40,6 +40,8 @@ export default function ItemsPage() {
 
         });
 
+    const [search, setSearch] = useState("");
+
 
 
     async function load() {
@@ -180,7 +182,15 @@ p-10
         payload;
 
 
+    const filteredData = data.filter(item =>
+        (item.item_name || "")
+            .toLowerCase()
+            .includes(search.toLowerCase()) ||
 
+        (item.category || "")
+            .toLowerCase()
+            .includes(search.toLowerCase())
+    );
     return (
 
         //         <main
@@ -557,7 +567,18 @@ mb-8
                     Inventory List
 
                 </h2>
-
+                <div className="text-sm text-slate-500 mb-4">
+                    Showing {filteredData.length} of {data.length} items
+                </div>
+                <div className="mb-6">
+                    <input
+                        type="text"
+                        placeholder="Search item..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="input w-full"
+                    />
+                </div>
 
 
                 <div
@@ -570,7 +591,7 @@ gap-5
 
                     {
 
-                        data.map(
+                        filteredData.map(
 
                             item => (
 

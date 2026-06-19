@@ -37,12 +37,14 @@ font-bold
             </div>
 
             <table className="w-full">
-                <thead>
+                <thead className="bg-slate-50">
                     <tr
                         className="
 bg-slate-50
 border-b
 border-slate-200
+hover:bg-slate-50
+transition-colors
 "
                     >
                         <th className="p-6 text-left py-3">Method</th>

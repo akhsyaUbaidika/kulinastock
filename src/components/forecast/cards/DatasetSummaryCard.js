@@ -2,38 +2,79 @@ export default function DatasetSummaryCard({
     summary
 }) {
 
+    // const metrics = [
+    //     {
+    //         label: "Observations",
+    //         value:
+    //             summary?.total_observations
+    //     },
+
+    //     {
+    //         label: "Average Demand",
+    //         value:
+    //             summary?.average_demand
+    //     },
+
+    //     {
+    //         label: "Zero Demand",
+    //         value:
+    //             summary?.zero_count
+    //     },
+
+    //     {
+    //         label: "Seasonality",
+    //         value:
+    //             summary?.seasonality
+    //     },
+
+    //     {
+    //         label: "Readiness",
+    //         value:
+    //             summary?.readiness
+    //     },
+    // ];
+
     const metrics = [
         {
             label: "Observations",
-            value:
-                summary?.total_observations
+            value: summary?.total_observations
         },
 
         {
             label: "Average Demand",
-            value:
-                summary?.average_demand
+            value: summary?.average_demand
+        },
+
+        {
+            label: "Min Demand",
+            value: summary?.min_demand
+        },
+
+        {
+            label: "Max Demand",
+            value: summary?.max_demand
         },
 
         {
             label: "Zero Demand",
-            value:
-                summary?.zero_count
+            value: summary?.zero_count
+        },
+
+        {
+            label: "Zero %",
+            value: `${summary?.zero_percentage}%`
         },
 
         {
             label: "Seasonality",
-            value:
-                summary?.seasonality
+            value: summary?.seasonality
         },
 
         {
             label: "Readiness",
-            value:
-                summary?.readiness
-        },
+            value: summary?.readiness
+        }
     ];
-
     return (
 
         <div
@@ -79,7 +120,8 @@ text-[#0B132B]
                 className="
 grid
 grid-cols-2
-md:grid-cols-5
+md:grid-cols-4
+lg:grid-cols-8
 gap-6
 "
             >
@@ -114,7 +156,11 @@ ${metric.label === "Readiness"
                                     ? metric.value === "READY"
                                         ? "text-emerald-600"
                                         : "text-red-600"
-                                    : "text-slate-900"
+
+                                    : metric.label === "Seasonality"
+                                        ? "text-blue-600"
+
+                                        : "text-slate-900"
                                 }
 `}
                         >

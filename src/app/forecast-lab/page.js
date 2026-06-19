@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 
 import DatasetSelector from "@/components/forecast/DatasetSelector";
 import HistoricalDatasetTable from "@/components/forecast/HistoricalDatasetTable";
-import MethodEvaluationTable from "@/components/forecast/MethodEvaluationTable";
+// import MethodEvaluationTable from "@/components/forecast/MethodEvaluationTable";
 import PredictionTable from "@/components/forecast/PredictionTable";
-import RecommendationCard from "@/components/forecast/RecommendationCard";
+// import RecommendationCard from "@/components/forecast/RecommendationCard";
 import KPICards
     from "@/components/forecast/cards/KPICards";
 import DatasetSummaryCard
@@ -27,6 +27,10 @@ import DiagnosticCard
     from "@/components/forecast/cards/DiagnosticCard";
 import RecommendationCardV2
     from "@/components/forecast/cards/RecommendationCardV2";
+import TrainTestCard
+    from "@/components/forecast/cards/TrainTestCard";
+import ForecastWorkflowCard
+    from "@/components/forecast/cards/ForecastWorkflowCard";
 
 export default function ForecastLabPage() {
 
@@ -283,9 +287,35 @@ btn-primary
                                 forecastResult.dataset_summary
                             }
                         />
+                        <ForecastWorkflowCard />
                         <HistoricalChart
                             data={
                                 forecastResult.historical_series
+                            }
+                        />
+                        <TrainTestCard
+                            trainTest={
+                                forecastResult.train_test
+                            }
+                        />
+                        <MethodRankingTable
+                            ranking={
+                                forecastResult.ranking
+                            }
+                        />
+                        <BestMethodCard
+                            method={
+                                forecastResult.best_method
+                            }
+                        />
+                        <ExplanationCard
+                            explanation={
+                                forecastResult.explanation
+                            }
+                        />
+                        <DiagnosticCard
+                            diagnostic={
+                                forecastResult.diagnostic
                             }
                         />
                         <ForecastChart
@@ -299,51 +329,38 @@ btn-primary
                                 forecastResult.adjusted_predictions
                             }
                         />
-                        <MethodRankingTable
-                            ranking={
-                                forecastResult.ranking
-                            }
-                        />
-                        <BestMethodCard
-                            method={
-                                forecastResult.best_method
-                            }
-                        />
+
+
                         <WeeklyHeatmap
                             weeklyPattern={
                                 forecastResult.weekly_pattern
                             }
                         />
-                        <ExplanationCard
-                            explanation={
-                                forecastResult.explanation
-                            }
-                        />
-                        <DiagnosticCard
-                            diagnostic={
-                                forecastResult.diagnostic
-                            }
-                        />
-                        <MethodEvaluationTable
+
+
+                        {/* <MethodEvaluationTable
                             methods={
                                 forecastResult.methods
                             }
                             bestMethod={
                                 forecastResult.best_method
                             }
-                        />
+                        /> */}
 
                         <PredictionTable
                             predictions={
                                 forecastResult.predictions
                             }
+                            adjusted={
+                                forecastResult.adjusted_predictions
+                            }
                         />
 
-                        <RecommendationCard
+                        {/* <RecommendationCard
                             recommendation={
                                 forecastResult.recommendation
                             }
-                        />
+                        /> */}
                     </>
                 )}
             </div>

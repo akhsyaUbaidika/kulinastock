@@ -100,7 +100,7 @@ text-lg
 mb-2
 "
                     >
-                        Business Reason
+                        Dataset Characteristic
                     </h3>
 
                     <p

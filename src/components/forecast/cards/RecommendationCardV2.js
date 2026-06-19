@@ -41,7 +41,7 @@ font-bold
 mb-8
 "
             >
-                Restock Decision
+                Inventory Assessment
             </h2>
 
             <div
@@ -56,7 +56,7 @@ gap-6
                 <div>
 
                     <p className="text-blue-200">
-                        Current Stock
+                        Current Inventory
                     </p>
 
                     <p
@@ -73,7 +73,7 @@ font-bold
                 <div>
 
                     <p className="text-blue-200">
-                        Minimum Stock
+                        Safety Stock
                     </p>
 
                     <p
@@ -90,7 +90,7 @@ font-bold
                 <div>
 
                     <p className="text-blue-200">
-                        Recommended Order
+                        Suggested Replenishment
                     </p>
 
                     <p
