@@ -7,7 +7,6 @@ import {
 } from "react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import StockPlanningContent from "./StockPlanningContent";
 
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -32,7 +31,7 @@ export default function StockPlanningPage() {
         </Suspense>
     );
 }
-export default function StockPlanningContent() {
+function StockPlanningContent() {
 
 
     const [items, setItems] =
