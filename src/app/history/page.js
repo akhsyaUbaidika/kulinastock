@@ -47,6 +47,7 @@ export default function HistoryPage() {
                 transaction_type: "OUT",
                 qty: 1,
                 transaction_date: today,
+                note: ""
             }
         ]);
 
@@ -88,7 +89,9 @@ export default function HistoryPage() {
 
     const types = [
         "IN",
-        "OUT"
+        "OUT",
+        "ADJ_IN",
+        "ADJ_OUT"
     ];
 
     async function load() {
@@ -160,23 +163,11 @@ export default function HistoryPage() {
                             transactions:
                                 transactions.map(
                                     trx => ({
-
-                                        item_id:
-                                            Number(
-                                                trx.item_id
-                                            ),
-
-                                        transaction_type:
-                                            trx.transaction_type,
-
-                                        qty:
-                                            Number(
-                                                trx.qty
-                                            ),
-
-                                        transaction_date:
-                                            trx.transaction_date,
-
+                                        item_id: Number(trx.item_id),
+                                        transaction_type: trx.transaction_type,
+                                        qty: Number(trx.qty),
+                                        transaction_date: trx.transaction_date,
+                                        note: trx.note
                                     })
                                 )
 
@@ -223,6 +214,7 @@ export default function HistoryPage() {
                 transaction_type: "OUT",
                 qty: 1,
                 transaction_date: today,
+                note: ""
             }
         ]);
 
@@ -241,6 +233,7 @@ export default function HistoryPage() {
                 transaction_type: "OUT",
                 qty: 1,
                 transaction_date: today,
+                note: ""
             }
 
         ]);
@@ -500,7 +493,7 @@ export default function HistoryPage() {
                         row.qty,
 
                     Unit:
-                        row.items?.unit,
+                        row.items?.small_unit,
 
                 }));
 
@@ -840,7 +833,7 @@ export default function HistoryPage() {
                                     key={index}
                                     className="
                     grid
-                    grid-cols-[2fr_1fr_1fr_1fr_auto]
+                    grid-cols-[2fr_1fr_1fr_1fr_2fr_auto]
 gap-3
                     "
                                 >
@@ -909,6 +902,14 @@ gap-3
                                             OUT
                                         </option>
 
+                                        <option value="ADJ_IN">
+                                            Stock Correction (+)
+                                        </option>
+
+                                        <option value="ADJ_OUT">
+                                            Stock Correction (-)
+                                        </option>
+
                                     </select>
 
                                     <input
@@ -948,6 +949,29 @@ gap-3
                         "
                                     />
 
+                                    <input
+                                        value={trx.note}
+                                        onChange={e =>
+                                            updateRow(
+                                                index,
+                                                "note",
+                                                e.target.value
+                                            )
+                                        }
+                                        placeholder={
+                                            trx.transaction_type === "IN"
+                                                ? "Restock supplier"
+                                                : trx.transaction_type === "OUT"
+                                                    ? "Produksi"
+                                                    : "Alasan adjustment"
+                                        }
+                                        className="
+    h-16
+    rounded-3xl
+    px-5
+    bg-slate-50
+    "
+                                    />
                                     <button
                                         type="button"
                                         onClick={() =>
@@ -997,18 +1021,17 @@ gap-3
 
                     </div>
 
-                </form>
-                <div
-                    className="
+                    <div
+                        className="
     flex
     justify-end
     pt-4
     "
-                >
+                    >
 
-                    <button
-                        type="submit"
-                        className="
+                        <button
+                            type="submit"
+                            className="
         h-14
         px-8
         rounded-2xl
@@ -1018,13 +1041,14 @@ gap-3
         hover:bg-blue-700
         transition
         "
-                    >
+                        >
 
-                        Save All
+                            Save All
 
-                    </button>
+                        </button>
 
-                </div>
+                    </div>
+                </form>
 
 
             </section>
@@ -1677,6 +1701,28 @@ font-semibold
                                     Qty
 
                                 </th>
+                                <th
+                                    className="
+text-left
+p-6
+font-semibold
+"
+                                >
+
+                                    Note
+
+                                </th>
+                                <th
+                                    className="
+text-left
+p-6
+font-semibold
+"
+                                >
+
+                                    By
+
+                                </th>
 
                             </tr>
 
@@ -1740,7 +1786,6 @@ p-6
                                                     className={
 
                                                         row.transaction_type === "IN"
-
                                                             ? `
 bg-emerald-100
 text-emerald-700
@@ -1751,7 +1796,8 @@ text-xs
 font-semibold
 `
 
-                                                            : `
+                                                            : row.transaction_type === "OUT"
+                                                                ? `
 bg-red-100
 text-red-700
 px-3
@@ -1761,6 +1807,26 @@ text-xs
 font-semibold
 `
 
+                                                                : row.transaction_type === "ADJ_IN"
+                                                                    ? `
+bg-blue-100
+text-blue-700
+px-3
+py-1
+rounded-full
+text-xs
+font-semibold
+`
+
+                                                                    : `
+bg-orange-100
+text-orange-700
+px-3
+py-1
+rounded-full
+text-xs
+font-semibold
+`
                                                     }
                                                 >
 
@@ -1787,11 +1853,38 @@ font-medium
 
                                                 {
                                                     row.items
-                                                        ?.unit
+                                                        ?.small_unit
                                                 }
 
                                             </td>
 
+                                            <td
+                                                className="
+p-6
+font-medium
+"
+                                            >
+
+                                                {
+                                                    row.note
+                                                }
+
+
+                                            </td>
+                                            <td
+                                                className="
+p-6
+font-medium
+"
+                                            >
+
+                                                {
+                                                    row.users
+                                                        ?.username
+                                                }
+
+
+                                            </td>
                                         </tr>
 
                                     ))

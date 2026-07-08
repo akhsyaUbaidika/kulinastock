@@ -22,26 +22,22 @@ export default function ItemsPage() {
             null
         );
 
-    const [
+    const [form, setForm] = useState({
+        item_name: "",
+        category: "",
 
-        form,
-        setForm
+        small_unit: "",
+        large_unit: "",
 
-    ]
+        qty_per_large_unit: "",
+        purchase_multiple: "",
 
-        =
-
-        useState({
-
-            item_name: "",
-            category: "",
-            unit: "",
-            minimum_stock: 20
-
-        });
+        minimum_stock: ""
+    });
 
     const [search, setSearch] = useState("");
-
+    const [editingItem, setEditingItem] =
+        useState(null);
 
 
     async function load() {
@@ -86,7 +82,9 @@ export default function ItemsPage() {
             {
 
                 method:
-                    "POST",
+                    editingItem
+                        ? "PUT"
+                        : "POST",
 
                 headers: {
 
@@ -96,22 +94,33 @@ export default function ItemsPage() {
                 },
 
                 body:
-
                     JSON.stringify(
-                        form
+                        editingItem
+                            ? {
+                                id:
+                                    editingItem,
+                                ...form
+                            }
+                            : form
                     )
 
             }
 
         );
 
-        setForm({
+        setEditingItem(null);
 
+        setForm({
             item_name: "",
             category: "",
-            unit: "",
-            minimum_stock: 20
 
+            small_unit: "",
+            large_unit: "",
+
+            qty_per_large_unit: "",
+            purchase_multiple: "",
+
+            minimum_stock: ""
         });
 
         load();
@@ -280,7 +289,11 @@ mb-2
 "
                 >
 
-                    Add Item
+                    {
+                        editingItem
+                            ? "Edit Item"
+                            : "Add Item"
+                    }
 
                 </h2>
 
@@ -300,7 +313,7 @@ mb-8
                 <div
                     className="
 grid
-xl:grid-cols-4
+xl:grid-cols-3
 gap-4
 "
                 >
@@ -328,12 +341,10 @@ gap-4
 
                         }
 
-                        placeholder="
-Item Name
-"
+                        placeholder="Item Name (contoh: Ayam)"
 
                         className="
-input
+input-ui
 "
                     />
 
@@ -360,46 +371,66 @@ input
 
                         }
 
-                        placeholder="
-Category
-"
+                        placeholder="Category (contoh: Protein)"
 
                         className="
-input
+input-ui
 "
                     />
 
 
 
                     <input
-
-                        value={
-                            form.unit
+                        value={form.small_unit}
+                        onChange={(e) =>
+                            setForm({
+                                ...form,
+                                small_unit: e.target.value.toLowerCase()
+                            })
                         }
-
-                        onChange={
-                            e =>
-
-                                setForm({
-
-                                    ...form,
-
-                                    unit:
-
-                                        e.target.value
-
-                                })
-
-                        }
-
-                        placeholder="
-Unit
-"
-
-                        className="
-input
-"
+                        placeholder="Small Unit (contoh: gram)"
+                        className="input-ui"
                     />
+
+                    <input
+                        value={form.large_unit}
+                        onChange={(e) =>
+                            setForm({
+                                ...form,
+                                large_unit: e.target.value.toLowerCase()
+                            })
+                        }
+                        placeholder="Large Unit (contoh: kg)"
+                        className="input-ui"
+                    />
+
+                    <input
+                        type="number"
+                        value={form.qty_per_large_unit}
+                        onChange={(e) =>
+                            setForm({
+                                ...form,
+                                qty_per_large_unit: e.target.value
+                            })
+                        }
+                        placeholder="Qty per Large Unit (contoh: 1000)"
+                        className="input-ui"
+                    />
+
+                    <input
+                        type="number"
+                        value={form.purchase_multiple}
+                        onChange={(e) =>
+                            setForm({
+                                ...form,
+                                purchase_multiple: e.target.value
+                            })
+                        }
+                        placeholder="Purchase Multiple (contoh: 5)"
+                        className="input-ui"
+                    />
+
+
 
 
 
@@ -427,9 +458,9 @@ number
                                 })
 
                         }
-
+                        placeholder="Minimum Stock (contoh: 5)"
                         className="
-input
+input-ui
 "
                     />
 
@@ -440,17 +471,17 @@ input
                 <button
 
                     className="
-mt-5
-px-8
-py-4
-rounded-2xl
-bg-blue-600
-text-white
+btn-primary
+mt-6
 "
 
                 >
 
-                    Save
+                    {
+                        editingItem
+                            ? "Update"
+                            : "Save"
+                    }
 
                 </button>
 
@@ -485,11 +516,39 @@ mb-8
                             summary.categories
                         ],
 
+                        // [
+                        //     "Need Attention",
+                        //     data.filter(
+                        //         i =>
+                        //             i.current_stock <=
+                        //             i.minimum_stock
+                        //     ).length
+                        // ]
+                        // [
+                        //     "Healthy Stock",
+                        //     data.filter(
+                        //         i =>
+                        //             i.current_stock >
+                        //             i.minimum_stock
+                        //     ).length
+                        // ]
                         [
-                            "Stock",
-
-                            summary.totalStock
+                            "Coverage Ratio",
+                            (
+                                data.reduce(
+                                    (acc, item) =>
+                                        acc +
+                                        (
+                                            item.minimum_stock > 0
+                                                ? item.current_stock /
+                                                item.minimum_stock
+                                                : 0
+                                        ),
+                                    0
+                                ) / data.length
+                            ).toFixed(1) + " x"
                         ]
+
 
                     ]
 
@@ -576,7 +635,7 @@ mb-8
                         placeholder="Search item..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="input w-full"
+                        className="input-ui w-full"
                     />
                 </div>
 
@@ -647,23 +706,71 @@ text-slate-500
 
 
 
-                                        <button
+                                        <div className="flex gap-4">
 
-                                            onClick={
-                                                () => remove(
-                                                    item.id
-                                                )
-                                            }
+                                            <button
 
-                                            className="
-text-red-500
+                                                onClick={() => {
+
+                                                    setEditingItem(item.id);
+
+                                                    setForm({
+
+                                                        item_name:
+                                                            item.item_name,
+
+                                                        category:
+                                                            item.category,
+
+                                                        small_unit:
+                                                            item.small_unit,
+
+                                                        large_unit:
+                                                            item.large_unit,
+
+                                                        qty_per_large_unit:
+                                                            item.qty_per_large_unit,
+
+                                                        purchase_multiple:
+                                                            item.purchase_multiple,
+
+                                                        minimum_stock:
+                                                            item.minimum_stock
+
+                                                    });
+
+                                                    window.scrollTo({
+
+                                                        top: 0,
+
+                                                        behavior:
+                                                            "smooth"
+
+                                                    });
+
+                                                }}
+
+                                                className="
+text-blue-600
+font-medium
 "
 
-                                        >
+                                            >
 
-                                            Delete
+                                                Edit
 
-                                        </button>
+                                            </button>
+
+                                            <button
+                                                onClick={() => remove(item.id)}
+                                                className="
+text-red-500
+"
+                                            >
+                                                Delete
+                                            </button>
+
+                                        </div>
 
                                     </div>
 
@@ -673,7 +780,7 @@ text-red-500
                                         className="
 mt-8
 grid
-grid-cols-3
+grid-cols-4
 "
                                     >
 
@@ -697,6 +804,39 @@ font-bold
                                                 }
 
                                             </div>
+                                            <div
+                                                className="
+text-sm
+text-slate-500
+"
+                                            >
+                                                {item.small_unit}
+                                            </div>
+
+                                        </div>
+                                        <div>
+
+                                            <div>
+                                                Minimum
+                                            </div>
+
+                                            <div
+                                                className="
+text-3xl
+font-bold
+"
+                                            >
+                                                {item.minimum_stock}
+                                            </div>
+
+                                            <div
+                                                className="
+text-sm
+text-slate-500
+"
+                                            >
+                                                {item.small_unit}
+                                            </div>
 
                                         </div>
 
@@ -710,16 +850,16 @@ font-bold
 
                                             </div>
 
-                                            <div
-                                                className="
-font-bold
-"
-                                            >
+                                            <div className="text-2xl font-bold">
+                                                {item.qty_per_large_unit}
+                                                {" "}
+                                                {item.small_unit}
+                                            </div>
 
-                                                {
-                                                    item.unit
-                                                }
+                                            <div className="text-l text-slate-500">
 
+                                                {" / "}
+                                                {item.large_unit}
                                             </div>
 
                                         </div>

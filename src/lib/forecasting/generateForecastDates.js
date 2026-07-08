@@ -9,22 +9,25 @@ const DAYS = [
 ];
 
 export function generateForecastDates(
-    horizon
+    horizon,
+    startDate
 ) {
 
     const result = [];
 
-    const today =
-        new Date();
+    const baseDate =
+        startDate
+            ? new Date(startDate)
+            : new Date();
 
     for (
-        let i = 1;
+        let i = 0;
         i <= horizon;
         i++
     ) {
 
         const date =
-            new Date(today);
+            new Date(baseDate);
 
         date.setDate(
             date.getDate() + i

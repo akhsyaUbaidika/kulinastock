@@ -32,7 +32,7 @@ font-semibold
 mb-2
 "
             >
-                Best Method
+                Selected Model
             </p>
 
             <h2
@@ -58,31 +58,31 @@ mb-6
 
                 <div>
                     <p className="text-slate-500 text-sm">
-                        MAPE
+                        Primary Metric
                     </p>
 
                     <p className="text-2xl font-bold">
-                        {method.mape}%
+                        {method.selection_metric}
                     </p>
                 </div>
 
                 <div>
                     <p className="text-slate-500 text-sm">
-                        MAE
+                        Tie Breaker #1
                     </p>
 
                     <p className="text-2xl font-bold">
-                        {method.mae}
+                        {method.tie_breaker_1}
                     </p>
                 </div>
 
                 <div>
                     <p className="text-slate-500 text-sm">
-                        RMSE
+                        Tie Breaker #2
                     </p>
 
                     <p className="text-2xl font-bold">
-                        {method.rmse}
+                        {method.tie_breaker_2}
                     </p>
                 </div>
 

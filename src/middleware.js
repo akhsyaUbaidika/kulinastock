@@ -128,6 +128,27 @@ export function middleware(request) {
         }
 
     }
+    /*
+=========================
+AUDIT ACCESS
+=========================
+*/
+
+    if (
+        pathname.startsWith(
+            "/audit"
+        ) &&
+        role !== "superadmin"
+    ) {
+
+        return NextResponse.redirect(
+            new URL(
+                "/dashboard",
+                request.url
+            )
+        );
+
+    }
 
     return NextResponse.next();
 

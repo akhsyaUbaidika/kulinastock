@@ -358,7 +358,7 @@ export default function DatasetPreviewPage() {
                     row.qty,
 
                 Unit:
-                    row.items?.unit,
+                    row.items?.small_unit,
 
             }));
 
@@ -1114,7 +1114,7 @@ font-medium
                                                     {" "}
 
                                                     {
-                                                        row.items?.unit
+                                                        row.items?.small_unit
                                                     }
 
                                                 </td>

@@ -1,4 +1,9 @@
 import { supabase } from "@/lib/supabase";
+import { cookies } from "next/headers";
+import {
+    createAuditLog
+}
+    from "@/lib/audit";
 
 export async function GET() {
 
@@ -24,10 +29,18 @@ export async function GET() {
 id,
 item_name,
 category,
-unit,
-minimum_stock,
+
 current_stock,
-created_at
+minimum_stock,
+
+small_unit,
+large_unit,
+
+qty_per_large_unit,
+purchase_multiple,
+
+created_at,
+updated_at
 `)
 
                 .order(
@@ -39,6 +52,8 @@ created_at
         )
 
             throw error;
+
+
 
 
 
@@ -208,12 +223,21 @@ export async function POST(
                             ||
                             "General",
 
-                        unit:
+                        small_unit:
+                            body.small_unit || "pcs",
 
-                            body
-                                .unit
-                            ||
-                            "pcs",
+                        large_unit:
+                            body.large_unit || "pcs",
+
+                        qty_per_large_unit:
+                            Number(
+                                body.qty_per_large_unit || 1
+                            ),
+
+                        purchase_multiple:
+                            Number(
+                                body.purchase_multiple || 1
+                            ),
 
                         minimum_stock:
 
@@ -229,7 +253,9 @@ export async function POST(
                             ),
 
                         current_stock:
-                            0
+                            0,
+                        updated_at:
+                            new Date()
 
                     }
 
@@ -248,6 +274,41 @@ export async function POST(
             throw error;
 
 
+        const cookieStore =
+            await cookies();
+
+        const auth =
+            cookieStore.get(
+                "kulinastock_auth"
+            );
+
+        if (auth) {
+
+            const user =
+                JSON.parse(
+                    auth.value
+                );
+
+            await createAuditLog({
+
+                user_id:
+                    user.id,
+
+                table_name:
+                    "items",
+
+                record_id:
+                    data.id,
+
+                action:
+                    "CREATE",
+
+                new_value:
+                    data.item_name
+
+            });
+
+        }
 
         return Response
             .json({
@@ -293,7 +354,235 @@ export async function POST(
 
 }
 
+export async function PUT(request) {
 
+    try {
+
+        const cookieStore =
+            await cookies();
+
+        const auth =
+            cookieStore.get(
+                "kulinastock_auth"
+            );
+
+        if (!auth) {
+
+            return Response.json(
+                {
+                    success: false,
+                    message: "Unauthorized"
+                },
+                {
+                    status: 401
+                }
+            );
+
+        }
+
+        const user =
+            JSON.parse(
+                auth.value
+            );
+
+        console.log(
+            "Current User:",
+            user
+        );
+
+
+        const body =
+            await request.json();
+
+        if (!body.id) {
+
+            return Response.json(
+                {
+                    success: false,
+                    message: "Item id required"
+                },
+                {
+                    status: 400
+                }
+            );
+
+        }
+
+        const {
+            data: oldItem,
+            error: oldError
+        }
+
+            =
+
+            await supabase
+
+                .from("items")
+
+                .select("*")
+
+                .eq("id", body.id)
+
+                .single();
+
+        if (oldError)
+            throw oldError;
+
+
+
+        const {
+
+            data,
+
+            error
+
+        }
+
+            =
+
+            await supabase
+
+                .from("items")
+
+                .update({
+
+                    item_name:
+                        body.item_name,
+
+                    category:
+                        body.category,
+
+                    small_unit:
+                        body.small_unit,
+
+                    large_unit:
+                        body.large_unit,
+
+                    qty_per_large_unit:
+                        Number(
+                            body.qty_per_large_unit
+                        ),
+
+                    purchase_multiple:
+                        Number(
+                            body.purchase_multiple
+                        ),
+
+                    minimum_stock:
+                        Number(
+                            body.minimum_stock
+                        ),
+
+                    updated_at:
+                        new Date()
+
+                })
+
+                .eq(
+                    "id",
+                    body.id
+                )
+
+                .select()
+
+                .single();
+
+        if (error)
+            throw error;
+        const auditFields = [
+
+            "item_name",
+            "category",
+
+            "small_unit",
+            "large_unit",
+
+            "qty_per_large_unit",
+            "purchase_multiple",
+
+            "minimum_stock"
+
+        ];
+
+        for (
+
+            const field
+
+            of
+
+            auditFields
+
+        ) {
+
+            if (
+
+                oldItem[field] !=
+                body[field]
+
+            ) {
+
+                await createAuditLog({
+
+                    user_id:
+                        user.id,
+
+                    table_name:
+                        "items",
+
+                    record_id:
+                        body.id,
+
+                    action:
+                        "UPDATE",
+
+                    field_name:
+                        field,
+
+                    old_value:
+                        oldItem[field],
+
+                    new_value:
+                        body[field]
+
+                });
+
+            }
+
+        }
+
+        return Response.json({
+
+            success: true,
+
+            data
+
+        });
+
+    }
+
+    catch (err) {
+
+        return Response.json(
+
+            {
+
+                success: false,
+
+                message: err.message
+
+            },
+
+            {
+
+                status: 500
+
+            }
+
+        );
+
+    }
+
+}
 
 export async function DELETE(
 

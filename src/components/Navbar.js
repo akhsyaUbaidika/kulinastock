@@ -15,6 +15,8 @@ import {
     Database,
     FlaskConical,
     Menu,
+    ShieldCheck,
+    ScrollText
 } from "lucide-react";
 
 // const menu = [
@@ -187,6 +189,15 @@ const menusByRole = {
 
             icon:
                 FlaskConical,
+        }, {
+            name:
+                "Audit Trail",
+
+            href:
+                "/audit",
+
+            icon:
+                ScrollText,
         },
 
     ],

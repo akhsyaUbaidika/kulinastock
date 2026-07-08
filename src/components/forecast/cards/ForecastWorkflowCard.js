@@ -4,9 +4,8 @@ export default function ForecastWorkflowCard() {
         "Historical Demand",
         "Train-Test Split",
         "Method Evaluation",
-        "Best Method",
+        "Best Method Selection",
         "Forecast Generation",
-        "Weekly Adjustment",
         "Inventory Assessment"
     ];
 

@@ -99,21 +99,7 @@ items-center
         data;
 
     const predicted3Days =
-
-        priorityItem
-
-            ?
-
-            Math.ceil(
-                priorityItem
-                    .current_stock
-                *
-                1.2
-            )
-
-            :
-
-            0;
+        priorityItem?.total_prediction ?? 0;
 
 
 
@@ -368,7 +354,7 @@ mb-8
                                     <div
                                         className="
 grid
-md:grid-cols-3
+md:grid-cols-4
 gap-4
 "
                                     >
@@ -401,7 +387,19 @@ mt-2
                                                 }
 
                                             </div>
+                                            <div
+                                                className="
+text-sm
+text-slate-500
+mt-1
+"
+                                            >
 
+                                                {
+                                                    priorityItem.small_unit
+                                                }
+
+                                            </div>
                                         </div>
 
 
@@ -434,6 +432,19 @@ mt-2
                                                 }
 
                                             </div>
+                                            <div
+                                                className="
+text-sm
+text-blue-100
+mt-1
+"
+                                            >
+
+                                                {
+                                                    priorityItem.small_unit
+                                                }
+
+                                            </div>
 
                                         </div>
 
@@ -462,7 +473,82 @@ text-red-600
 "
                                             >
 
-                                                20
+                                                {
+                                                    priorityItem.minimum_stock
+                                                }
+
+                                            </div>
+                                            <div
+                                                className="
+text-sm
+text-slate-500
+mt-1
+"
+                                            >
+
+                                                {
+                                                    priorityItem.small_unit
+                                                }
+
+                                            </div>
+                                        </div>
+                                        <div
+                                            className="
+rounded-3xl
+bg-green-50
+p-6
+"
+                                        >
+
+                                            <div>
+
+                                                Restock
+
+                                            </div>
+
+                                            <div
+                                                className="
+text-4xl
+font-bold
+mt-2
+text-green-600
+"
+                                            >
+
+                                                {
+                                                    Math.ceil(
+                                                        priorityItem.recommendation.suggested_restock /
+                                                        priorityItem.qty_per_large_unit
+                                                    )
+                                                }
+
+                                            </div>
+
+                                            <div
+                                                className="
+text-sm
+text-slate-500
+mt-1
+"
+                                            >
+
+                                                {
+                                                    priorityItem.large_unit
+                                                }
+
+                                                <br />
+
+                                                (
+                                                {
+                                                    priorityItem.recommendation.suggested_restock
+                                                }
+
+                                                {" "}
+
+                                                {
+                                                    priorityItem.small_unit
+                                                }
+                                                )
 
                                             </div>
 
@@ -608,7 +694,7 @@ space-y-3
                                                 }
 
                                                 href={
-                                                    `/forecast?item=${item.id}`
+                                                    `/stock-planning?item=${item.id}`
                                                 }
 
                                                 className="
@@ -643,17 +729,70 @@ text-slate-500
                                                     {" "}
 
                                                     {
-                                                        item
-                                                            .current_stock
+                                                        item.current_stock
                                                     }
 
                                                     /
 
                                                     {
-                                                        item
-                                                            .minimum_stock
+                                                        item.minimum_stock
                                                     }
 
+                                                    {" "}
+
+                                                    {
+                                                        item.small_unit
+                                                    }
+                                                    {
+                                                        item.status === "RESTOCK"
+
+                                                            ? (
+
+                                                                <div
+                                                                    className="
+text-sm
+font-semibold
+text-orange-600
+mt-2
+"
+                                                                >
+
+                                                                    Restock {" "}
+
+                                                                    {
+                                                                        Math.ceil(
+                                                                            item.recommendation.suggested_restock /
+                                                                            item.qty_per_large_unit
+                                                                        )
+                                                                    }
+
+                                                                    {" "}
+
+                                                                    {
+                                                                        item.large_unit
+                                                                    }
+
+                                                                </div>
+
+                                                            )
+
+                                                            : (
+
+                                                                <div
+                                                                    className="
+text-sm
+font-medium
+text-slate-500
+mt-2
+"
+                                                                >
+
+                                                                    Histori kurang dari 14 hari
+
+                                                                </div>
+
+                                                            )
+                                                    }
                                                 </div>
 
                                             </Link>

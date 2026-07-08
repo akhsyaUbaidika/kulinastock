@@ -33,6 +33,7 @@ body {
 }
 
 
+
 /* reusable */
 
 .card {
@@ -82,6 +83,16 @@ body {
 
   outline:
     none;
+
+  font-size:
+    14px;
+
+  transition:
+    .2s ease;
+}
+
+.input-ui::placeholder {
+  color: #94a3b8;
 }
 
 .input-ui:focus {
@@ -94,6 +105,11 @@ body {
       99,
       235,
       .12);
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: .35;
 }
 
 .btn-primary {

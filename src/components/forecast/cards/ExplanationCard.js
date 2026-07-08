@@ -1,5 +1,7 @@
 export default function ExplanationCard({
-    explanation
+    explanation,
+    datasetSummary,
+    item
 }) {
 
     if (!explanation) {
@@ -103,16 +105,44 @@ mb-2
                         Dataset Characteristic
                     </h3>
 
-                    <p
-                        className="
-text-slate-600
-leading-7
-"
-                    >
+                    <p className="text-slate-600 leading-7">
+
+                        Average demand:
+                        {" "}
+                        {datasetSummary.average_demand}
+                        {" "}
+                        {item.small_unit}/day
+
+                        <br />
+                        <br />
+
+                        Demand range:
+                        {" "}
+                        {datasetSummary.min_demand}
+                        {" - "}
+                        {datasetSummary.max_demand}
+                        {" "}
+                        {item.small_unit}
+
+                        <br />
+                        <br />
+
+                        Seasonality:
+                        {" "}
                         {
-                            explanation.business_reason
+                            datasetSummary.seasonality === "WEEKLY"
+                                ? "Weekly Pattern Detected"
+                                : datasetSummary.seasonality
                         }
+
+                        <br />
+                        <br />
+
+
+                        {explanation.business_reason}
+
                     </p>
+
                 </div>
 
             </div>

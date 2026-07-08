@@ -107,7 +107,7 @@ mb-8
                 className="
 grid
 grid-cols-2
-md:grid-cols-4
+md:grid-cols-5
 gap-6
 mt-8
 mb-8
@@ -134,6 +134,18 @@ mb-8
 
                     <p className="text-3xl font-bold">
                         {trainTest.test_size}
+                    </p>
+
+                </div>
+
+                <div className="bg-slate-50 rounded-2xl p-5">
+
+                    <p className="text-sm text-slate-500 mb-2">
+                        Total Records
+                    </p>
+
+                    <p className="text-3xl font-bold text-slate-900">
+                        {trainTest.train_size + trainTest.test_size}
                     </p>
 
                 </div>

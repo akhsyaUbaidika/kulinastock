@@ -3,6 +3,33 @@ import { NextResponse } from "next/server";
 import { supabase }
     from "@/lib/supabase";
 
+import { aggregateDemand }
+    from "@/lib/forecasting/aggregateDemand";
+
+import { extractSeries }
+    from "@/lib/forecasting/extractSeries";
+
+import { evaluateModel }
+    from "@/lib/forecasting/evaluateModel";
+
+import { selectBestModel }
+    from "@/lib/forecasting/selectBestModel";
+
+import { buildPredictions }
+    from "@/lib/forecasting/buildPredictions";
+
+import { generateRecommendation }
+    from "@/lib/forecasting/recommendation";
+
+import { SES }
+    from "@/lib/forecasting/ses";
+
+import { Holt }
+    from "@/lib/forecasting/holt";
+
+import { HoltWinters }
+    from "@/lib/forecasting/holtWinters";
+
 export async function GET(request) {
 
     try {
@@ -102,100 +129,233 @@ export async function GET(request) {
                             item.id
                     );
 
-                const avgDaily =
-                    itemHistory.length > 0
-                        ? Math.ceil(
-                            itemHistory.reduce(
-                                (
-                                    sum,
-                                    row
-                                ) =>
-                                    sum +
-                                    row.qty,
-                                0
-                            ) /
-                            itemHistory.length
-                        )
-                        : 0;
-
-                const dailyPrediction =
-                    [];
-
-                for (
-                    let i = 0;
-                    i < days;
-                    i++
-                ) {
-
-                    dailyPrediction.push(
-                        avgDaily
+                const historicalSeries =
+                    aggregateDemand(
+                        itemHistory
                     );
-
-                }
-
-                const totalPrediction =
-                    dailyPrediction.reduce(
-                        (a, b) => a + b,
-                        0
-                    );
-
-                const currentStock =
-                    item.current_stock;
-
-                const restockSuggestion =
-                    Math.max(
-                        totalPrediction -
-                        currentStock,
-                        0
-                    );
-
-                let status =
-                    "SAFE";
 
                 if (
-                    currentStock <
-                    totalPrediction
+                    historicalSeries.length < 14
                 ) {
 
-                    status =
-                        "RESTOCK";
+                    return {
+                        item_id: item.id,
+                        item_name: item.item_name,
+
+                        daily_prediction:
+                            Array(days).fill("-"),
+
+                        total_prediction:
+                            "-",
+
+                        current_stock:
+                            item.current_stock,
+
+                        small_unit:
+                            item.small_unit,
+
+                        large_unit:
+                            item.large_unit,
+
+                        recommendation: {
+                            suggested_restock: 0,
+                            raw_restock: 0
+                        },
+
+                        status:
+                            "INSUFFICIENT_HISTORY",
+
+                        data_health: {
+                            status:
+                                "INSUFFICIENT_HISTORY",
+
+                            observation_count:
+                                historicalSeries.length,
+
+                            minimum_required:
+                                14
+                        }
+                    };
 
                 }
 
-                if (
-                    currentStock <
-                    totalPrediction * 0.5
+                const fullSeries =
+                    extractSeries(
+                        historicalSeries
+                    );
+
+                const methods = [
+
+                    evaluateModel({
+                        name: "SES",
+                        actual: fullSeries,
+                        fitted: SES(
+                            fullSeries,
+                            days
+                        ).forecast
+                    }),
+
+                    evaluateModel({
+                        name: "Holt",
+                        actual: fullSeries,
+                        fitted: Holt(
+                            fullSeries,
+                            days
+                        ).forecast
+                    }),
+
+                    evaluateModel({
+                        name: "Holt-Winters",
+                        actual: fullSeries,
+                        fitted: HoltWinters(
+                            fullSeries,
+                            days
+                        ).forecast
+                    })
+
+                ];
+
+                const bestMethod =
+                    selectBestModel(
+                        methods
+                    );
+
+                let finalModel;
+
+                switch (
+                bestMethod.name
                 ) {
 
-                    status =
-                        "CRITICAL";
+                    case "SES":
+                        finalModel =
+                            SES(
+                                fullSeries,
+                                days
+                            );
+                        break;
 
+                    case "Holt":
+                        finalModel =
+                            Holt(
+                                fullSeries,
+                                days
+                            );
+                        break;
+
+                    default:
+                        finalModel =
+                            HoltWinters(
+                                fullSeries,
+                                days
+                            );
                 }
+
+                const lastTransactionDate =
+                    historicalSeries[
+                        historicalSeries.length - 1
+                    ]?.date;
+
+                const forecastStartDate =
+                    new Date(
+                        lastTransactionDate
+                    );
+
+                forecastStartDate.setDate(
+                    forecastStartDate.getDate() + 1
+                );
+
+                const predictions =
+                    buildPredictions(
+                        finalModel.forecast,
+                        forecastStartDate
+                            .toISOString()
+                            .split("T")[0]
+                    );
+
+                const recommendation =
+                    generateRecommendation({
+
+                        currentStock:
+                            item.current_stock,
+
+                        minimumStock:
+                            item.minimum_stock,
+
+                        purchaseMultiple:
+                            item.purchase_multiple,
+
+                        predictions,
+
+                        qtyPerLargeUnit:
+                            item.qty_per_large_unit
+
+                    });
+
+
+
+
 
                 return {
 
-                    item_id:
-                        item.id,
+                    item_id: item.id,
 
-                    item_name:
-                        item.item_name,
-
-                    unit:
-                        item.unit,
+                    item_name: item.item_name,
 
                     current_stock:
-                        currentStock,
+                        item.current_stock,
+
+                    small_unit:
+                        item.small_unit,
+
+                    large_unit:
+                        item.large_unit,
+
+                    qty_per_large_unit:
+                        item.qty_per_large_unit,
+
+                    purchase_multiple:
+                        item.purchase_multiple,
+
+                    best_method:
+                        bestMethod.name,
 
                     daily_prediction:
-                        dailyPrediction,
+                        predictions.map(
+                            p => p.qty
+                        ),
 
                     total_prediction:
-                        totalPrediction,
+                        predictions.reduce(
+                            (sum, p) =>
+                                sum + p.qty,
+                            0
+                        ),
 
-                    restock_suggestion:
-                        restockSuggestion,
+                    recommendation,
 
-                    status
+                    status:
+                        recommendation.status,
+
+                    last_transaction_date:
+                        lastTransactionDate,
+
+                    forecast_start_date:
+                        forecastStartDate
+                            .toISOString()
+                            .split("T")[0],
+
+                    missing_days:
+                        Math.max(
+                            Math.floor(
+                                (
+                                    new Date() -
+                                    new Date(
+                                        lastTransactionDate
+                                    )
+                                ) / 86400000
+                            ) - 1,
+                            0
+                        )
 
                 };
 

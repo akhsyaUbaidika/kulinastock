@@ -4,7 +4,10 @@ export function generateRecommendation({
 
     minimumStock,
 
-    predictions
+    predictions,
+
+    purchaseMultiple,
+    qtyPerLargeUnit
 
 }) {
 
@@ -31,7 +34,18 @@ export function generateRecommendation({
         predictedNeed +
         minimumStock;
 
-    const suggestedRestock =
+    // const suggestedRestock =
+
+    //     Math.max(
+
+    //         0,
+
+    //         targetStock -
+    //         currentStock
+
+    //     );
+
+    const rawRestock =
 
         Math.max(
 
@@ -41,6 +55,33 @@ export function generateRecommendation({
             currentStock
 
         );
+
+    const supplierOrderQty =
+
+        Math.max(
+            purchaseMultiple,
+            1
+        ) *
+
+        Math.max(
+            qtyPerLargeUnit,
+            1
+        );
+
+    const suggestedRestock =
+
+        rawRestock > 0
+
+            ?
+
+            Math.ceil(
+                rawRestock /
+                supplierOrderQty
+            ) * supplierOrderQty
+
+            :
+
+            0;
 
     const status =
 
@@ -90,8 +131,17 @@ export function generateRecommendation({
         predicted_need:
             predictedNeed,
 
+        target_stock:
+            targetStock,
+
+        raw_restock:
+            rawRestock,
+
         suggested_restock:
             suggestedRestock,
+
+        purchase_multiple:
+            purchaseMultiple,
 
         coverage_days:
             coverageDays,

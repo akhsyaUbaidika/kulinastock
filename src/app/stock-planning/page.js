@@ -5,7 +5,7 @@ import {
     useMemo,
     useState
 } from "react";
-
+import { useSearchParams } from "next/navigation";
 
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -33,26 +33,27 @@ export default function StockPlanningPage() {
     const [days, setDays] =
         useState(3);
 
+    const [sortBy, setSortBy] =
+        useState("name");
+
     const [rows, setRows] =
         useState([]);
+    const [currentPage, setCurrentPage] =
+        useState(1);
+
+    const PAGE_SIZE = 15;
 
     const [openItems, setOpenItems] =
         useState(false);
 
-    const [autoSelectedItem,
-        setAutoSelectedItem] =
-        useState(null);
 
-    useEffect(() => {
+    const searchParams =
+        useSearchParams();
 
-        const item =
-            new URLSearchParams(
-                window.location.search
-            ).get("item");
-
-        setAutoSelectedItem(item);
-
-    }, []);
+    const autoSelectedItem =
+        Number(
+            searchParams.get("item")
+        );
     /*
     ========================
     LOAD ITEMS
@@ -127,11 +128,10 @@ export default function StockPlanningPage() {
                     nextDate.getDate() + i
                 );
 
-                result.push(
-                    dayNames[
-                    nextDate.getDay()
-                    ]
-                );
+                result.push({
+                    label: dayNames[nextDate.getDay()],
+                    date: nextDate.toISOString().split("T")[0]
+                });
 
             }
 
@@ -173,6 +173,7 @@ export default function StockPlanningPage() {
             data.data || []
         );
 
+        setCurrentPage(1);
     }
 
     /*
@@ -192,7 +193,7 @@ export default function StockPlanningPage() {
         }
 
         const exportData =
-            rows.map(row => {
+            sortedRows.map(row => {
 
                 const dayData = {};
 
@@ -221,7 +222,7 @@ export default function StockPlanningPage() {
                         row.current_stock,
 
                     Unit:
-                        row.unit,
+                        row.small_unit,
 
                     "Saran Restock":
                         row.restock_suggestion,
@@ -312,6 +313,77 @@ export default function StockPlanningPage() {
 
     }
 
+    const sortedRows =
+        useMemo(() => {
+
+            const data = [...rows];
+
+            if (sortBy === "name") {
+
+                data.sort((a, b) =>
+                    a.item_name.localeCompare(
+                        b.item_name
+                    )
+                );
+
+            }
+
+            if (sortBy === "priority") {
+
+                data.sort((a, b) => {
+
+                    const getPriority = row => {
+
+                        if (
+                            row.status ===
+                            "INSUFFICIENT_HISTORY"
+                        )
+                            return 1;
+
+                        if (
+                            row.recommendation
+                                ?.suggested_restock > 0
+                        )
+                            return 0;
+
+                        return 2;
+
+                    };
+
+                    return (
+                        getPriority(a) -
+                        getPriority(b)
+                    );
+
+                });
+
+            }
+
+            return data;
+
+        }, [rows, sortBy]);
+    const totalPages =
+        Math.ceil(
+            sortedRows.length /
+            PAGE_SIZE
+        );
+
+    const paginatedRows =
+        useMemo(() => {
+
+            const start =
+                (currentPage - 1) *
+                PAGE_SIZE;
+
+            return sortedRows.slice(
+                start,
+                start + PAGE_SIZE
+            );
+
+        }, [
+            sortedRows,
+            currentPage
+        ]);
     return (
         <main className="min-h-screen px-8 py-8">
 
@@ -413,7 +485,7 @@ p-10
                                         <div
                                             className="
                     absolute
-                    z-20
+                    z-50
                     mt-3
                     w-full
                     bg-white
@@ -558,6 +630,33 @@ text-red-600
                             </select>
 
                         </div>
+                        <div>
+
+                            <h3 className="font-semibold mb-4">
+
+                                Urutkan
+
+                            </h3>
+
+                            <select
+                                value={sortBy}
+                                onChange={e =>
+                                    setSortBy(e.target.value)
+                                }
+                                className="border rounded-xl px-4 py-3"
+                            >
+
+                                <option value="name">
+                                    Nama Barang
+                                </option>
+
+                                <option value="priority">
+                                    Prioritas Restock
+                                </option>
+
+                            </select>
+
+                        </div>
 
                         <button
                             onClick={exportExcel}
@@ -599,25 +698,57 @@ text-red-600
                         <thead>
 
                             <tr className="border-b border-slate-200">
-
-                                <th className="text-left p-6">
+                                <th
+                                    className="
+        sticky
+        left-0
+        bg-white
+        z-20
+        text-left
+        p-6
+        shadow-sm
+    "
+                                >
 
                                     Item
 
                                 </th>
 
                                 {
-                                    headers.map(day => (
 
+
+                                    headers.map(header => (
                                         <th
-                                            key={day}
+                                            key={header.date}
                                             className="text-left p-6"
                                         >
 
-                                            {day}
+                                            <div className="font-semibold">
+                                                {header.label}
+                                            </div>
+
+                                            {
+                                                days > 7 && (
+                                                    <div className="
+            text-xs
+            text-slate-500
+            mt-1
+        ">
+                                                        {
+                                                            new Date(header.date)
+                                                                .toLocaleDateString(
+                                                                    "id-ID",
+                                                                    {
+                                                                        day: "2-digit",
+                                                                        month: "short"
+                                                                    }
+                                                                )
+                                                        }
+                                                    </div>
+                                                )
+                                            }
 
                                         </th>
-
                                     ))
                                 }
 
@@ -645,12 +776,6 @@ text-red-600
 
                                 </th>
 
-                                <th className="text-left p-6">
-
-                                    Status
-
-                                </th>
-
                             </tr>
 
                         </thead>
@@ -658,21 +783,30 @@ text-red-600
                         <tbody>
 
                             {
-                                rows.map(row => (
+                                paginatedRows.map(row => (
 
                                     <tr
                                         key={row.item_id}
                                         className="border-b border-slate-100"
                                     >
-
-                                        <td className="p-6 font-semibold">
+                                        <td
+                                            className="
+        sticky
+        left-0
+        bg-white
+        z-10
+        p-6
+        font-semibold
+        shadow-sm
+    "
+                                        >
 
                                             {row.item_name}
 
                                         </td>
 
                                         {
-                                            row.daily_prediction.map(
+                                            row.daily_prediction?.map(
                                                 (
                                                     value,
                                                     index
@@ -709,23 +843,71 @@ text-red-600
 
                                         <td className="p-6">
 
-                                            {row.unit}
+                                            {row.small_unit}
 
                                         </td>
 
                                         <td className="p-6 font-semibold text-orange-500">
 
                                             {
-                                                row.restock_suggestion
+                                                row.status === "INSUFFICIENT_HISTORY"
+                                                    ? (
+                                                        <span className="
+                text-slate-500
+                italic
+            ">
+                                                            Histori kurang dari 14 hari
+                                                        </span>
+                                                    )
+                                                    : row.recommendation?.suggested_restock > 0
+                                                        ? (
+                                                            <div>
+
+                                                                <div className="
+                    font-semibold
+                    text-orange-500
+                ">
+
+                                                                    {
+                                                                        row.recommendation
+                                                                            .suggested_restock
+                                                                    } {
+                                                                        row.large_unit
+                                                                    }
+
+                                                                </div>
+
+                                                                <div className="
+                    text-xs
+                    text-slate-500
+                ">
+
+                                                                    (
+                                                                    {
+                                                                        row.recommendation
+                                                                            .raw_restock
+                                                                    } {
+                                                                        row.small_unit
+                                                                    }
+                                                                    )
+
+                                                                </div>
+
+                                                            </div>
+                                                        )
+                                                        : (
+                                                            <span className="
+                    text-green-600
+                    font-medium
+                ">
+                                                                Aman
+                                                            </span>
+                                                        )
                                             }
 
                                         </td>
 
-                                        <td className="p-6">
 
-                                            {row.status}
-
-                                        </td>
 
                                     </tr>
 
@@ -735,7 +917,135 @@ text-red-600
                         </tbody>
 
                     </table>
+                    <div
+                        className="
+flex
+justify-between
+items-center
+px-6
+py-5
+border-t
+border-slate-200
+"
+                    >
 
+                        <div
+                            className="
+text-sm
+text-slate-500
+"
+                        >
+
+                            Menampilkan{" "}
+
+                            {
+                                Math.min(
+                                    (currentPage - 1) * PAGE_SIZE + 1,
+                                    sortedRows.length
+                                )
+                            }
+
+                            -
+
+                            {
+                                Math.min(
+                                    currentPage * PAGE_SIZE,
+                                    sortedRows.length
+                                )
+                            }
+
+                            {" "}dari{" "}
+
+                            {
+                                sortedRows.length
+                            }
+
+                            {" "}item
+
+                        </div>
+
+                        <div
+                            className="
+flex
+items-center
+gap-2
+"
+                        >
+
+                            <button
+
+                                disabled={
+                                    currentPage === 1
+                                }
+
+                                onClick={() =>
+                                    setCurrentPage(
+                                        prev =>
+                                            prev - 1
+                                    )
+                                }
+
+                                className="
+px-4
+py-2
+rounded-xl
+border
+disabled:opacity-40
+"
+                            >
+
+                                ←
+
+                            </button>
+
+                            <span
+                                className="
+px-4
+font-semibold
+"
+                            >
+
+                                {
+                                    currentPage
+                                }
+
+                                /
+
+                                {
+                                    totalPages || 1
+                                }
+
+                            </span>
+
+                            <button
+
+                                disabled={
+                                    currentPage === totalPages
+                                }
+
+                                onClick={() =>
+                                    setCurrentPage(
+                                        prev =>
+                                            prev + 1
+                                    )
+                                }
+
+                                className="
+px-4
+py-2
+rounded-xl
+border
+disabled:opacity-40
+"
+                            >
+
+                                →
+
+                            </button>
+
+                        </div>
+
+                    </div>
                 </div>
 
             </div>

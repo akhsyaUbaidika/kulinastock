@@ -51,12 +51,17 @@ export async function GET(request) {
             item_id,
             transaction_type,
             qty,
+            note,
             transaction_date,
             created_at,
             items (
                 id,
                 item_name,
-                unit
+                small_unit
+            ),
+            users (
+                id,
+                username
             )
         `);
 
@@ -82,6 +87,7 @@ export async function GET(request) {
                 }
             );
 
+
         if (error)
             throw error;
 
@@ -91,20 +97,26 @@ export async function GET(request) {
                 data.length,
 
             stockIn:
-                data
-                    .filter(
-                        x =>
-                            x.transaction_type === "IN"
-                    )
-                    .length,
+                data.filter(
+                    x =>
+                        [
+                            "IN",
+                            "ADJ_IN"
+                        ].includes(
+                            x.transaction_type
+                        )
+                ).length,
 
             stockOut:
-                data
-                    .filter(
-                        x =>
-                            x.transaction_type === "OUT"
-                    )
-                    .length
+                data.filter(
+                    x =>
+                        [
+                            "OUT",
+                            "ADJ_OUT"
+                        ].includes(
+                            x.transaction_type
+                        )
+                ).length,
 
         };
 

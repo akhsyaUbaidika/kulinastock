@@ -13,8 +13,7 @@ import {
 
 export default function ForecastChart({
     historical,
-    predictions,
-    adjusted
+    predictions
 }) {
 
     const historicalData =
@@ -47,31 +46,12 @@ export default function ForecastChart({
 
     ];
 
-    const adjustedData = [
 
-        {
-            date:
-                lastHistorical.date,
-
-            adjusted:
-                lastHistorical.demand
-        },
-
-        ...adjusted.map(
-            row => ({
-                date: row.date,
-                adjusted: row.qty
-            })
-        )
-
-    ];
     const mergedData = [
 
         ...historicalData,
 
-        ...predictionData,
-
-        ...adjustedData
+        ...predictionData
 
     ].reduce((acc, curr) => {
 
@@ -135,7 +115,7 @@ font-bold
 text-[#0B132B]
 "
                 >
-                    Forecast vs Adjustment
+                    Historical vs Forecast
                 </h2>
 
             </div>
@@ -185,14 +165,7 @@ text-[#0B132B]
                             dot={{ r: 5 }}
                         />
 
-                        <Line
-                            type="linear"
-                            dataKey="adjusted"
-                            stroke="#ea580c"
-                            strokeWidth={3}
-                            name="Adjusted"
-                            dot={{ r: 5 }}
-                        />
+
 
                     </LineChart>
 

@@ -59,15 +59,15 @@ import {
     buildRanking
 }
     from "@/lib/forecasting/buildRanking";
-import {
-    buildWeeklyPattern
-}
-    from "@/lib/forecasting/buildWeeklyPattern";
+// import {
+//     buildWeeklyPattern
+// }
+//     from "@/lib/forecasting/buildWeeklyPattern";
 
-import {
-    applyWeeklyAdjustment
-}
-    from "@/lib/forecasting/applyWeeklyAdjustment";
+// import {
+//     applyWeeklyAdjustment
+// }
+//     from "@/lib/forecasting/applyWeeklyAdjustment";
 import {
     buildExplanation
 }
@@ -83,6 +83,17 @@ export async function POST(
 ) {
 
     try {
+        console.log("now", new Date());
+        console.log("iso", new Date().toISOString());
+        console.log("locale", new Date().toLocaleString("id-ID"));
+        console.log("jakarta", new Intl.DateTimeFormat(
+            "id-ID",
+            {
+                timeZone: "Asia/Jakarta",
+                dateStyle: "full",
+                timeStyle: "long"
+            }
+        ).format(new Date()));
 
         const body =
             await request.json();
@@ -151,9 +162,12 @@ export async function POST(
                     id,
                     item_name,
                     category,
-                    unit,
                     current_stock,
-                    minimum_stock
+                    minimum_stock,
+                    small_unit,
+                    large_unit,
+                    qty_per_large_unit,
+                    purchase_multiple
                 `)
 
                 .eq(
@@ -230,6 +244,29 @@ export async function POST(
 
         }
 
+        if (
+            !transactions ||
+            transactions.length === 0
+        ) {
+
+            return Response.json({
+
+                success: false,
+
+                data_health: {
+
+                    status:
+                        "NO_TRANSACTIONS"
+
+                },
+
+                message:
+                    "No historical transaction found."
+
+            });
+
+        }
+
         /*
         ==========================
         AGGREGATE DEMAND
@@ -242,17 +279,160 @@ export async function POST(
                 transactions || []
             );
 
-        if (
+        console.log({
+            "historicalSeries":
+                historicalSeries[
+                historicalSeries.length - 1
+                ]
+        }
+        );
 
+        console.log({
+            "historicalSeries.slice": historicalSeries.slice(-5)
+
+        }
+        );
+
+        const lastTransactionDate =
+            historicalSeries[
+                historicalSeries.length - 1
+            ]?.date;
+
+        const today =
+            new Date();
+
+        today.setHours(
+            0,
+            0,
+            0,
+            0
+        );
+
+        const lastDate =
+            new Date(
+                lastTransactionDate
+            );
+
+        lastDate.setHours(
+            0,
+            0,
+            0,
+            0
+        );
+
+        const diffDays =
+            Math.floor(
+
+                (
+                    today -
+                    lastDate
+                )
+
+                /
+
+                (
+                    1000 *
+                    60 *
+                    60 *
+                    24
+                )
+
+            );
+        const forecastStartDate =
+            new Date(lastTransactionDate);
+
+        forecastStartDate.setDate(
+            forecastStartDate.getDate() + 1
+        );
+
+        console.log({
+            lastTransactionDate,
+            forecastStartDate
+        });
+        let dataHealth = {
+
+            status:
+                "READY",
+
+            last_transaction_date:
+                lastTransactionDate,
+
+            missing_days:
+                0,
+
+            // forecast_start_date:
+            //     today
+            //         .toISOString()
+            //         .split("T")[0]
+            forecast_start_date:
+                forecastStartDate
+                    .toISOString()
+                    .split("T")[0]
+
+        };
+
+        if (
+            diffDays > 1
+        ) {
+
+            // const forecastStartDate =
+            //     new Date(
+            //         lastDate
+            //     );
+
+            // forecastStartDate
+            //     .setDate(
+            //         forecastStartDate.getDate() + 1
+            //     );
+
+            dataHealth = {
+
+                status:
+                    "INCOMPLETE_DATA",
+
+                last_transaction_date:
+                    lastTransactionDate,
+
+                missing_days:
+                    diffDays - 1,
+
+                forecast_start_date:
+                    forecastStartDate
+                        .toISOString()
+                        .split("T")[0]
+
+            };
+
+        }
+
+
+
+
+        if (
             historicalSeries.length
             <
             14
-
         ) {
 
             return Response.json({
 
-                success: false,
+                success: true,
+
+                data_health: {
+
+                    status:
+                        "INSUFFICIENT_HISTORY",
+
+                    observation_count:
+                        historicalSeries.length,
+
+                    minimum_required:
+                        14,
+
+                    last_transaction_date:
+                        lastTransactionDate
+
+                },
 
                 message:
 
@@ -271,6 +451,11 @@ export async function POST(
             "historicalSeries:",
             historicalSeries
         );
+        // console.log({
+        //     "today:": today,
+        //     "lastTransactionDate:": lastTransactionDate,
+        //     "forecastStartDate:": forecastStartDate
+        // });
 
         /*
         ==========================
@@ -616,51 +801,54 @@ export async function POST(
 
             buildPredictions(
 
-                finalModel.forecast
+                finalModel.forecast,
+
+                dataHealth
+                    .forecast_start_date
 
             );
 
-        let weeklyPattern = {
+        // let weeklyPattern = {
 
-            enabled: false,
+        //     enabled: false,
 
-            base_method:
-                bestMethod.name,
+        //     base_method:
+        //         bestMethod.name,
 
-            factors: {}
+        //     factors: {}
 
-        };
+        // };
 
-        let adjustedPredictions =
+        // let adjustedPredictions =
 
-            predictions;
+        //     predictions;
 
-        if (
+        // if (
 
-            bestMethod.name ===
-            "SES"
+        //     bestMethod.name ===
+        //     "SES"
 
-        ) {
+        // ) {
 
-            weeklyPattern =
+        //     weeklyPattern =
 
-                buildWeeklyPattern(
+        //         buildWeeklyPattern(
 
-                    historicalSeries
+        //             historicalSeries
 
-                );
+        //         );
 
-            adjustedPredictions =
+        //     adjustedPredictions =
 
-                applyWeeklyAdjustment(
+        //         applyWeeklyAdjustment(
 
-                    predictions,
+        //             predictions,
 
-                    weeklyPattern
+        //             weeklyPattern
 
-                );
+        //         );
 
-        }
+        // }
 
         /*
         ==========================
@@ -679,8 +867,13 @@ export async function POST(
                 minimumStock:
 
                     item.minimum_stock,
+                purchaseMultiple:
+                    item.purchase_multiple,
 
-                predictions
+                predictions,
+
+                qtyPerLargeUnit:
+                    item.qty_per_large_unit
 
             });
 
@@ -766,13 +959,27 @@ export async function POST(
         RESPONSE
         ==========================
         */
+        console.log({
+            today:
+                today.toISOString().split("T")[0],
 
+            last_transaction_date:
+                lastTransactionDate,
+
+            forecast_start_date:
+                dataHealth.forecast_start_date,
+
+            dataHealth
+        });
         return Response.json({
 
             success:
                 true,
 
             item,
+
+            data_health:
+                dataHealth,
 
             // analysis_config: {
 
@@ -856,21 +1063,19 @@ export async function POST(
 
                 ...bestMethod,
 
+                selection_metric: "MAPE",
+
+                tie_breaker_1: "RMSE",
+
+                tie_breaker_2: "MAE",
+
                 reason: [
 
-                    "Lowest MAPE",
+                    `Selected using lowest MAPE (${bestMethod.mape}%)`,
 
-                    "Lowest RMSE",
+                    "RMSE used as first tie breaker",
 
-                    datasetSummary.zero_count > 0
-
-                        ?
-
-                        "Robust against intermittent demand"
-
-                        :
-
-                        "Best forecasting performance"
+                    "MAE used as second tie breaker"
 
                 ]
 
@@ -883,15 +1088,15 @@ export async function POST(
             model_outputs:
                 modelOutputs,
 
-            weekly_pattern:
+            // weekly_pattern:
 
-                weeklyPattern,
+            //     weeklyPattern,
 
             predictions,
 
-            adjusted_predictions:
+            // adjusted_predictions:
 
-                adjustedPredictions,
+            //     adjustedPredictions,
 
             recommendation
 

@@ -7,11 +7,11 @@ export default function KPICards({ result }) {
     const cards = [
         {
             label: "Current Stock",
-            value: `${item?.current_stock ?? 0} ${item?.unit ?? ""}`,
+            value: `${item?.current_stock ?? 0} ${item?.small_unit ?? ""}`,
         },
         {
             label: "Minimum Stock",
-            value: `${item?.minimum_stock ?? 0} ${item?.unit ?? ""}`,
+            value: `${item?.minimum_stock ?? 0} ${item?.small_unit ?? ""}`,
         },
         {
             label: "Best Method",

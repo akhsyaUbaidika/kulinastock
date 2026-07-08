@@ -2,12 +2,14 @@ import { generateForecastDates }
     from "./generateForecastDates";
 
 export function buildPredictions(
-    forecast
+    forecast,
+    startDate
 ) {
 
     const dates =
         generateForecastDates(
-            forecast.length
+            forecast.length,
+            startDate
         );
 
     return forecast.map(
