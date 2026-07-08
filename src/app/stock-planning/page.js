@@ -6,9 +6,13 @@ import {
     useState
 } from "react";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+import StockPlanningContent from "./StockPlanningContent";
 
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+
+
 
 const dayNames = [
     "Minggu",
@@ -22,6 +26,14 @@ const dayNames = [
 
 
 export default function StockPlanningPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <StockPlanningContent />
+        </Suspense>
+    );
+}
+export default function StockPlanningContent() {
+
 
     const [items, setItems] =
         useState([]);
