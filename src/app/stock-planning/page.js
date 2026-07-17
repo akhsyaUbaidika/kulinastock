@@ -52,7 +52,7 @@ function StockPlanningContent() {
     const [currentPage, setCurrentPage] =
         useState(1);
 
-    const PAGE_SIZE = 15;
+    const PAGE_SIZE = 10;
 
     const [openItems, setOpenItems] =
         useState(false);
